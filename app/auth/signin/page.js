@@ -26,6 +26,10 @@ export default function SignIn() {
     const formData = new FormData(event.currentTarget);
     const email = formData.get('email');
     const password = formData.get('password');
+    
+    // Get callbackUrl from URL search params
+    const searchParams = new URLSearchParams(window.location.search);
+    const callbackUrl = searchParams.get('callbackUrl') || '/admin';
 
     try {
       const result = await signIn('credentials', {
@@ -37,7 +41,7 @@ export default function SignIn() {
       if (result.error) {
         setError('Invalid email or password');
       } else {
-        router.push('/admin/rag-documents');
+        router.push(callbackUrl);
       }
     } catch (error) {
       setError('An error occurred during sign in');

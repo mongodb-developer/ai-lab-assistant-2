@@ -26,24 +26,17 @@ import InfoIcon from '@mui/icons-material/Info';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import LogoutIcon from '@mui/icons-material/Logout';
+import LoginIcon from '@mui/icons-material/Login';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useAuth } from '@/context/AuthProvider';
+import { usePathname, useRouter } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 
-// Mock session for development
-const mockSession = {
-  user: {
-    email: 'dev@example.com',
-    name: 'Developer',
-    image: null
-  }
-};
-
 export default function Header() {
-  const session = useAuth();
+  const { data: session } = useSession();
   const pathname = usePathname();
+  const router = useRouter();
   
   const [anchorEl, setAnchorEl] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -60,9 +53,9 @@ export default function Header() {
     setDrawerOpen(!drawerOpen);
   };
   
-  const handleSignOut = () => {
-    // Mock sign out for development
-    console.log('Signing out...');
+  const handleSignOut = async () => {
+    await signOut({ redirect: false });
+    router.push('/');
     handleClose();
   };
 
@@ -70,6 +63,10 @@ export default function Header() {
     { text: 'Chat', icon: <QuestionAnswerIcon />, path: '/chat' },
     { text: 'About', icon: <InfoIcon />, path: '/about' },
   ];
+
+  if (session?.user?.isAdmin) {
+    menuItems.push({ text: 'Admin', icon: <AdminPanelSettingsIcon />, path: '/admin' });
+  }
 
   const isActive = (path) => pathname === path;
 
@@ -141,38 +138,62 @@ export default function Header() {
               <GitHubIcon />
             </IconButton>
           </Tooltip>
-          <IconButton
-            onClick={handleMenu}
-            color="primary"
-            size="large"
-            sx={{
-              '&:hover': {
-                backgroundColor: 'rgba(0, 104, 74, 0.04)',
-              },
-            }}
-          >
-            <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
-              {session?.user?.name?.[0] || <AccountCircleIcon />}
-            </Avatar>
-          </IconButton>
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleClose}
-          >
-            <MenuItem onClick={handleClose}>
-              <ListItemIcon>
-                <AccountCircleIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText primary={session?.user?.name || 'Developer'} />
-            </MenuItem>
-            <MenuItem onClick={handleSignOut}>
-              <ListItemIcon>
-                <LogoutIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText primary="Sign Out" />
-            </MenuItem>
-          </Menu>
+          
+          {session ? (
+            <>
+              <IconButton
+                onClick={handleMenu}
+                color="primary"
+                size="large"
+                sx={{
+                  '&:hover': {
+                    backgroundColor: 'rgba(0, 104, 74, 0.04)',
+                  },
+                }}
+              >
+                <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
+                  {session?.user?.name?.[0] || <AccountCircleIcon />}
+                </Avatar>
+              </IconButton>
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleClose}
+              >
+                <MenuItem onClick={handleClose}>
+                  <ListItemIcon>
+                    <AccountCircleIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText primary={session?.user?.name || 'User'} />
+                </MenuItem>
+                {session?.user?.isAdmin && (
+                  <MenuItem component={Link} href="/admin" onClick={handleClose}>
+                    <ListItemIcon>
+                      <AdminPanelSettingsIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText primary="Admin Panel" />
+                  </MenuItem>
+                )}
+                <MenuItem onClick={handleSignOut}>
+                  <ListItemIcon>
+                    <LogoutIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText primary="Sign Out" />
+                </MenuItem>
+              </Menu>
+            </>
+          ) : (
+            <Button
+              variant="outlined"
+              color="primary"
+              size="small"
+              startIcon={<LoginIcon />}
+              component={Link}
+              href="/auth/signin"
+            >
+              Sign In
+            </Button>
+          )}
         </Box>
       </Toolbar>
     </AppBar>

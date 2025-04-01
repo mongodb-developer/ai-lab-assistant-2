@@ -14,11 +14,14 @@ export const authOptions = {
           const { conn } = await connectToDatabase();
           const users = conn.connection.db.collection('users');
 
-          // For development, allow a default admin user
-          if (credentials.email === 'admin@example.com' && credentials.password === 'admin123') {
+          // Use environment variables for admin credentials
+          const adminEmail = process.env.ADMIN_EMAIL || 'admin@example.com';
+          const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+          
+          if (credentials.email === adminEmail && credentials.password === adminPassword) {
             return {
               id: '1',
-              email: 'admin@example.com',
+              email: adminEmail,
               name: 'Admin User',
               isAdmin: true
             };

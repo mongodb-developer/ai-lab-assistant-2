@@ -135,7 +135,34 @@ GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
 NEXTAUTH_SECRET=your_nextauth_secret
 NEXTAUTH_URL=http://localhost:3000
+
+# Admin Authentication
+ADMIN_EMAIL=your_admin_email
+ADMIN_PASSWORD=your_secure_password
 ```
+
+### Authentication and Admin Access
+
+The application implements a secure authentication system:
+
+1. **Admin Authentication**: 
+   - Admin routes under `/admin/*` are protected by middleware and server-side checks
+   - Only users who sign in with the credentials matching `ADMIN_EMAIL` and `ADMIN_PASSWORD` can access the admin area
+   - Double protection: middleware checks the JWT token, and server-side checks occur in the admin layout
+
+2. **Authentication Flow**:
+   - Users attempt to access admin routes
+   - If not authenticated, they're redirected to the sign-in page
+   - After successful authentication with admin credentials, they receive a JWT token with `isAdmin: true`
+   - The token is verified on subsequent requests
+
+3. **Environment Variables for Auth**:
+   - `NEXTAUTH_SECRET`: Required for secure JWT encryption
+   - `NEXTAUTH_URL`: Your application's base URL
+   - `ADMIN_EMAIL`: Email for admin access
+   - `ADMIN_PASSWORD`: Password for admin access
+
+When deploying to Vercel, ensure all these environment variables are properly configured in your Vercel project settings.
 
 4. Run the development server
 ```bash

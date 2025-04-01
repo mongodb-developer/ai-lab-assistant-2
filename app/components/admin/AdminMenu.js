@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { 
+  Box,
   Paper, 
   List, 
   ListItem, 
@@ -17,6 +18,7 @@ import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import PeopleIcon from '@mui/icons-material/People';
 import EqualizerIcon from '@mui/icons-material/Equalizer';
 import DesignServicesIcon from '@mui/icons-material/DesignServices';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import Link from 'next/link';
@@ -26,6 +28,7 @@ export default function AdminMenu() {
   const pathname = usePathname();
   const [questionsOpen, setQuestionsOpen] = useState(false);
   const [usersOpen, setUsersOpen] = useState(false);
+  const [ragOpen, setRagOpen] = useState(false);
   
   const handleQuestionsClick = () => {
     setQuestionsOpen(!questionsOpen);
@@ -34,9 +37,25 @@ export default function AdminMenu() {
   const handleUsersClick = () => {
     setUsersOpen(!usersOpen);
   };
+
+  const handleRagClick = () => {
+    setRagOpen(!ragOpen);
+  };
   
   return (
-    <Paper elevation={2} sx={{ borderRadius: 2 }}>
+    <Box
+      sx={{
+        width: 280,
+        flexShrink: 0,
+        position: 'fixed',
+        height: '100vh',
+        pt: { xs: '64px', sm: '72px' }, // Account for header height
+        borderRight: '1px solid',
+        borderColor: 'divider',
+        backgroundColor: 'background.paper',
+        overflowY: 'auto'
+      }}
+    >
       <List component="nav" aria-label="admin navigation">
         <Typography 
           variant="h6" 
@@ -45,7 +64,8 @@ export default function AdminMenu() {
             px: 3, 
             borderBottom: '1px solid', 
             borderColor: 'divider', 
-            color: 'primary.main' 
+            color: 'primary.main',
+            backgroundColor: 'background.paper',
           }}
         >
           Admin Panel
@@ -125,6 +145,45 @@ export default function AdminMenu() {
             </ListItemButton>
           </List>
         </Collapse>
+
+        <ListItem disablePadding>
+          <ListItemButton onClick={handleRagClick}>
+            <ListItemIcon>
+              <MenuBookIcon color={pathname.includes('/admin/rag-documents') ? 'primary' : 'inherit'} />
+            </ListItemIcon>
+            <ListItemText primary="RAG Documents" />
+            {ragOpen ? <ExpandLess /> : <ExpandMore />}
+          </ListItemButton>
+        </ListItem>
+        
+        <Collapse in={ragOpen} timeout="auto" unmountOnExit>
+          <List component="div" disablePadding>
+            <ListItemButton 
+              sx={{ pl: 4 }} 
+              component={Link} 
+              href="/admin/rag-documents" 
+              selected={pathname === '/admin/rag-documents'}
+            >
+              <ListItemText primary="Browse Documents" />
+            </ListItemButton>
+            <ListItemButton 
+              sx={{ pl: 4 }} 
+              component={Link} 
+              href="/admin/rag-documents/upload" 
+              selected={pathname === '/admin/rag-documents/upload'}
+            >
+              <ListItemText primary="Upload Document" />
+            </ListItemButton>
+            <ListItemButton 
+              sx={{ pl: 4 }} 
+              component={Link} 
+              href="/admin/rag-documents/search" 
+              selected={pathname === '/admin/rag-documents/search'}
+            >
+              <ListItemText primary="Semantic Search" />
+            </ListItemButton>
+          </List>
+        </Collapse>
         
         <Divider />
         
@@ -154,6 +213,6 @@ export default function AdminMenu() {
           </ListItemButton>
         </ListItem>
       </List>
-    </Paper>
+    </Box>
   );
 }

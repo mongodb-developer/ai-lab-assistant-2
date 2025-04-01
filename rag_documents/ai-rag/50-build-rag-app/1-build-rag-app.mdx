@@ -1,0 +1,108 @@
+import InfoButton from "@site/src/components/InfoButton";
+
+# 👐 Build the RAG application
+
+Let's create a simple RAG workflow that takes in a user query, retrieves contextually relevant documents from MongoDB Atlas, and passes the query and retrieved context to an LLM to generate an answer to the user question.
+
+Fill in any `<CODE_BLOCK_N>` placeholders and run the cells under the **Step 8: Build the RAG application** section in the notebook to build the RAG "application".
+
+The answers for code blocks in this section are as follows:
+
+**CODE_BLOCK_16**
+
+<details>
+<summary>Answer</summary>
+<div>
+```python
+vector_search(user_query)
+```
+<InfoButton title="Vector Search" message={`This code performs a vector search on the data. Let's break it down:
+
+- vector_search(): This is a function you've defined that takes a user query and returns a list of documents
+- user_query: This is the query you want to search on
+
+For example, if you had this query:
+
+\`\`\`python
+user_query = "What is MongoDB Atlas?"
+\`\`\`
+
+The vector_search() function would return a list of documents that are contextually relevant to the query.
+
+\`\`\`python
+[
+    {"_id": 1, "body": "MongoDB Atlas is a cloud-based database platform that provides a scalable and flexible database solution for modern applications."},
+    {"_id": 2, "body": "MongoDB Atlas is a cloud-based database platform that provides a scalable and flexible database solution for modern applications."},
+]
+\`\`\`
+
+This list of documents can then be used to generate an answer to the user query.
+
+`} />
+
+</div>
+</details>
+
+**CODE_BLOCK_17**
+
+<details>
+<summary>Answer</summary>
+<div>
+```python
+create_prompt(user_query)
+```
+<InfoButton title="Create Prompt" message={`This code creates a prompt for the RAG application. Let's break it down:
+
+- create_prompt(): This is a function you've defined that takes a user query and returns a prompt
+- user_query: This is the query you want to create a prompt for
+
+For example, if you had this query:
+
+\`\`\`python
+user_query = "What is MongoDB Atlas?"
+\`\`\`
+
+The create_prompt() function would return a prompt for the RAG application.
+
+\`\`\`python
+prompt = "What is MongoDB Atlas?"
+\`\`\`
+
+This prompt can then be used to generate an answer to the user query.
+
+`} />
+
+</div>
+</details>
+
+**CODE_BLOCK_18**
+
+<details>
+<summary>Answer</summary>
+<div>
+```python
+{"role": "user", "content": prompt}
+```
+<InfoButton title="Create Prompt" message={`This code creates a prompt for the RAG application. Let's break it down:
+
+- create_prompt(): This is a function you've defined that takes a user query and returns a prompt
+- user_query: This is the query you want to create a prompt for
+
+For example, if you had this query:
+
+\`\`\`python
+user_query = "What is MongoDB Atlas?"
+\`\`\`
+
+The create_prompt() function would return a prompt for the RAG application.
+
+\`\`\`python
+prompt = "What is MongoDB Atlas?"
+\`\`\`
+
+This prompt can then be used to generate an answer to the user query.
+
+`} />
+
+</div>
+</details>

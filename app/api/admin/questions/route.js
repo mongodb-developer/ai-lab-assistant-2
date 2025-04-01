@@ -1,19 +1,22 @@
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/mongodb';
-import Question from '@/models/Question';
-import UnansweredQuestion from '@/models/UnansweredQuestion';
+import { connectToDatabase } from '../../../lib/mongodb';
+import Question from '../../../models/Question';
+import UnansweredQuestion from '../../../models/UnansweredQuestion';
 
 // GET /api/admin/questions - List all questions with pagination and filters
 export async function GET(request) {
   try {
     // Connect to database first
     console.log('Connecting to database...');
-    const mongoose = await connectToDatabase();
-    const dbName = mongoose.connection.db.databaseName;
+    const { conn } = await connectToDatabase();
+    if (!conn) {
+      throw new Error('Failed to connect to database');
+    }
+    const dbName = conn.connection.db.databaseName;
     console.log('Connected to database:', dbName);
 
     // First check if we can access the collections
-    const collections = await mongoose.connection.db.listCollections().toArray();
+    const collections = await conn.connection.db.listCollections().toArray();
     console.log('Available collections:', collections.map(c => c.name));
 
     // Get query parameters
@@ -122,8 +125,11 @@ export async function POST(request) {
   try {
     // Connect to database first
     console.log('Connecting to database...');
-    const mongoose = await connectToDatabase();
-    console.log('Connected to database:', mongoose.connection.db.databaseName);
+    const { conn } = await connectToDatabase();
+    if (!conn) {
+      throw new Error('Failed to connect to database');
+    }
+    console.log('Connected to database:', conn.connection.db.databaseName);
 
     const body = await request.json();
     const collection = body.collection || 'unanswered'; // Default to unanswered_questions

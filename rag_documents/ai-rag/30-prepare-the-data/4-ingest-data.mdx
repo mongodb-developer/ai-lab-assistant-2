@@ -1,0 +1,93 @@
+import Screenshot from "@site/src/components/Screenshot";
+import InfoButton from "@site/src/components/InfoButton";
+
+# 👐 Ingest data into MongoDB
+
+The final step to build a MongoDB vector store for the chatbot is to ingest the embedded article chunks into MongoDB.
+
+Fill in any `<CODE_BLOCK_N>` placeholders and run the cells under the **Step 5: Ingest data into MongoDB** section in the notebook to ingest the embedded documents into MongoDB.
+
+The answers for code blocks in this section are as follows:
+
+**CODE_BLOCK_6**
+
+<details>
+<summary>Answer</summary>
+<div>
+```python
+mongodb_client[DB_NAME][COLLECTION_NAME]
+``` 
+<InfoButton title="Creating a Collection" message={`This code creates a collection in MongoDB. Let's break it down:
+
+- mongodb_client: This is the MongoDB client you've defined earlier
+- DB_NAME: This is the name of the database you want to create the collection in
+- COLLECTION_NAME: This is the name of the collection you want to create
+
+For example, if you had this database and collection:
+
+\`\`\`python
+mongodb_client["mongodb_genai_devday"]["knowledge_base"]
+\`\`\`
+
+The code would return:
+
+\`\`\`python
+<pymongo.collection.Collection object at 0x1234567890>
+\`\`\`
+
+This is the collection object that you can use to insert the embedded documents into MongoDB.
+
+`} />
+
+</div>
+</details>
+
+**CODE_BLOCK_7**
+
+<details>
+<summary>Answer</summary>
+<div>
+```python
+collection.insert_many(embedded_docs)
+```
+<InfoButton title="Inserting Documents" message={`This code inserts a list of embedded documents into MongoDB. Let's break it down:
+
+- collection: This is the collection object you created earlier
+- insert_many(): This is a method of the collection object that takes a list of documents and inserts them into the collection
+
+For example, if you had this list of embedded documents:
+
+\`\`\`python
+embedded_docs = [
+    {"_id": 1, "embedding": [0.1, 0.2, 0.3], "text": "This is the first document."},
+    {"_id": 2, "embedding": [0.4, 0.5, 0.6], "text": "This is the second document."},
+]
+\`\`\`
+
+The collection.insert_many() method would insert the documents into the collection.
+
+\`\`\`python
+[
+    InsertOneResult(
+        inserted_id='66c29d4a9d21889d7e989c14',
+        acknowledged=True,
+        inserted_id='66c29d4a9d21889d7e989c14',
+        acknowledged=True,
+    )
+]
+\`\`\`
+
+This result shows that the documents were inserted successfully.
+
+`} />
+
+</div>
+</details>
+
+To verify that the data has been imported into your MongoDB cluster, navigate to the **Overview** page in the Atlas UI. In the **Clusters section**, select your cluster and click **Browse collections**.
+
+<Screenshot url="https://cloud.mongodb.com" src="img/screenshots/30-prepare-the-data/4-ingest-data/1-browse-collections.png" alt="Browse collections" />
+
+Ensure that you see a database called _mongodb_genai_devday_, and a collection named _knowledge_base_ under it. Note the number and format of documents in the collection.
+
+<Screenshot url="https://cloud.mongodb.com" src="img/screenshots/30-prepare-the-data/4-ingest-data/2-verify-collection.png" alt="Verify collection" />

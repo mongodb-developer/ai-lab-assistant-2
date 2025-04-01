@@ -123,6 +123,34 @@ const DebugPanel = ({ debug }) => {
           </Box>
         )}
 
+        {/* RAG Information (if applicable) */}
+        {debug.finalSource === 'rag_llm' && (
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="subtitle2" color="primary">RAG Information:</Typography>
+            <Box 
+              sx={{ 
+                p: 1,
+                bgcolor: 'background.paper',
+                borderRadius: 1,
+                border: '1px solid',
+                borderColor: 'divider'
+              }}
+            >
+              <Typography variant="body2">
+                Chunks Found: {debug.ragChunksFound || 0}
+              </Typography>
+              {debug.topRagScore !== undefined && (
+                <Typography variant="body2">
+                  Top Chunk Score: {debug.topRagScore.toFixed(4)}
+                </Typography>
+              )}
+              <Typography variant="body2">
+                Used RAG Context: {debug.usedRagContext ? '✅ Yes' : '❌ No'}
+              </Typography>
+            </Box>
+          </Box>
+        )}
+
         {/* Final Result */}
         <Box>
           <Typography variant="subtitle2" color="primary">Final Result:</Typography>
@@ -233,10 +261,18 @@ export default function MessageList({
                 {message.role === 'assistant' && message.metadata?.source && (
                   <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Chip
-                      icon={message.metadata.source.type === 'database' ? <DatabaseIcon /> : <SmartToyIcon />}
+                      icon={
+                        message.metadata.source.type === 'database' ? <DatabaseIcon /> : 
+                        message.metadata.source.type === 'rag_llm' ? <DatabaseIcon /> :
+                        <SmartToyIcon />
+                      }
                       label={`${message.metadata.source.label} ${message.metadata.source.confidence !== 'N/A' ? `(${message.metadata.source.confidence})` : ''}`}
                       size="small"
-                      color={message.metadata.source.type === 'database' ? 'primary' : 'secondary'}
+                      color={
+                        message.metadata.source.type === 'database' ? 'primary' : 
+                        message.metadata.source.type === 'rag_llm' ? 'info' :
+                        'secondary'
+                      }
                       variant="outlined"
                     />
                     {message.metadata.source.matched_question && (
@@ -312,7 +348,23 @@ export default function MessageList({
             {/* Message Metadata */}
             {message.metadata && (
               <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                {message.metadata.references && (
+                {message.metadata.references && Array.isArray(message.metadata.references) ? (
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                      References:
+                    </Typography>
+                    {message.metadata.references.map((ref, idx) => (
+                      <Box key={idx} sx={{ mt: 1, pl: 1, borderLeft: '2px solid', borderColor: 'info.light' }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                          {ref.title} {ref.score ? `(${Math.round(ref.score * 100)}%)` : ''}
+                        </Typography>
+                        <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary' }}>
+                          {ref.snippet}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                ) : message.metadata.references && (
                   <Typography variant="caption" color="text.secondary">
                     References: {message.metadata.references}
                   </Typography>

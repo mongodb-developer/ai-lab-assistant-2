@@ -16,6 +16,7 @@ const unansweredQuestionSchema = new mongoose.Schema({
       similarity: 'cosine'
     }
   },
+  used_rag: { type: Boolean, default: false },
   created_at: { type: Date, default: Date.now }
 }, {
   timestamps: true,

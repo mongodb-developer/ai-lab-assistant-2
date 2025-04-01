@@ -1,0 +1,49 @@
+import InfoButton from "@site/src/components/InfoButton";
+
+# 🦹 Re-rank retrieved results
+
+Re-rankers are specialized models that are trained to calculate the relevance between query-document pairs. Without re-ranking the order of retrieved results is governed by the embedding model, which isn't optimized for relevance and can lead to poor LLM recall in RAG applications.
+
+Fill in any `<CODE_BLOCK_N>` placeholders and run the cells under the **🦹‍♀️ Re-rank retrieved results** section in the notebook to add a re-ranking stage to the chatbot.
+
+The answers for code blocks in this section are as follows:
+
+**CODE_BLOCK_19**
+
+<details>
+<summary>Answer</summary>
+<div>
+```python
+rerank_model.rank(
+    user_query, documents, return_documents=True, top_k=5
+)
+```
+<InfoButton title="Reranking Documents" message={`This code re-ranks a list of documents based on a user query. Let's break it down:
+
+- rerank_model: This is the re-ranking model you've defined earlier
+- user_query: This is the query you want to re-rank the documents for
+
+For example, if you had this query:
+
+\`\`\`python
+user_query = "What is MongoDB Atlas?"
+\`\`\`
+
+The rerank_model.rank() method would return a list of documents that are contextually relevant to the query.
+
+\`\`\`python
+[
+    {"_id": 1, "body": "MongoDB Atlas is a cloud-based database platform that provides a scalable and flexible database solution for modern applications."},
+    {"_id": 5, "body": "MongoDB's flexible schema design allows for rapid development and iteration, especially in agile environments."},
+    {"_id": 3, "body": "MongoDB is a NoSQL database that uses a document-oriented data model, making it ideal for handling unstructured data."},
+    {"_id": 2, "body": "PostgreSQL is an open-source relational database known for its robustness and SQL compliance."},
+    {"_id": 4, "body": "Amazon RDS offers a managed database service for several database engines, including MySQL and PostgreSQL."},
+]
+\`\`\`
+
+This list of documents can then be used to generate an answer to the user query.
+
+`} />
+
+</div>
+</details>

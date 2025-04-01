@@ -1,0 +1,211 @@
+import InfoButton from "@site/src/components/InfoButton";
+
+# 👐 Add memory to the RAG application
+
+In many Q&A applications we want to allow the user to have a back-and-forth conversation with the LLM, meaning the application needs some sort of "memory" of past questions and answers, and some logic for incorporating those into its current thinking. In this section, you will retrieve chat message history from MongoDB and incorporate it in your RAG application.
+
+Fill in any `<CODE_BLOCK_N>` placeholders and run the cells under the **Step 9: Add memory to the RAG application** section in the notebook to add memory to the chatbot.
+
+The answers for code blocks in this section are as follows:
+
+**CODE_BLOCK_20**
+
+<details>
+<summary>Answer</summary>
+<div>
+```python
+history_collection.create_index("session_id")
+```
+<InfoButton title="Creating an Index" message={`This code creates an index on the collection. Let's break it down:
+
+- history_collection: This is the collection you want to create an index on
+- create_index(): This is a method of the collection object that takes a field name and creates an index on the collection
+
+For example, if you had this collection:
+
+\`\`\`python
+history_collection = mongodb_client["mongodb_genai_devday"]["chat_history"]
+\`\`\`
+
+The code would create an index on the collection.
+
+\`\`\`python
+<pymongo.collection.Collection object at 0x1234567890>
+\`\`\`
+
+This is the collection object that you can use to create an index on the collection.
+
+`} />
+
+</div>
+</details>
+
+**CODE_BLOCK_21**
+
+<details>
+<summary>Answer</summary>
+<div>
+```python
+history_collection.insert_one(message)
+```
+<InfoButton title="Inserting a Message" message={`This code inserts a message into the collection. Let's break it down:
+
+- history_collection: This is the collection you want to insert a message into
+- insert_one(): This is a method of the collection object that takes a message and inserts it into the collection
+
+For example, if you had this message:
+
+\`\`\`python
+message = {"session_id": "123", "role": "user", "content": "What is MongoDB Atlas?"}
+\`\`\`
+
+The code would insert the message into the collection.
+
+\`\`\`python
+<pymongo.collection.Collection object at 0x1234567890>
+\`\`\`
+
+This is the collection object that you can use to insert a message into the collection.
+
+`} />
+
+</div>
+</details>
+
+**CODE_BLOCK_22**
+
+<details>
+<summary>Answer</summary>
+<div>
+```python
+history_collection.find({"session_id": session_id}).sort("timestamp", 1)
+```
+<InfoButton title="Finding Messages" message={`This code finds messages in the collection. Let's break it down:
+
+- history_collection: This is the collection you want to find messages in
+- find(): This is a method of the collection object that takes a query and returns a list of messages
+
+For example, if you had this query:
+
+\`\`\`python
+session_id = "123"
+\`\`\`
+
+The code would return a list of messages in the collection.
+
+\`\`\`python
+[
+    {"session_id": "123", "role": "user", "content": "What is MongoDB Atlas?"}
+]
+\`\`\`
+
+This is the list of messages that you can use to retrieve the chat history.
+
+`} />
+
+</div>
+</details>
+
+**CODE_BLOCK_23**
+
+<details>
+<summary>Answer</summary>
+<div>
+```python
+retrieve_session_history(session_id)
+```
+<InfoButton title="Retrieving Session History" message={`This code retrieves the chat history for a given session ID. Let's break it down:
+
+- retrieve_session_history(): This is a function you've defined that takes a session ID and returns a list of messages
+- session_id: This is the session ID you want to retrieve the chat history for
+
+For example, if you had this session ID:
+
+\`\`\`python
+session_id = "123"
+\`\`\`
+
+The retrieve_session_history() function would return a list of messages in the collection.
+
+\`\`\`python
+[
+    {"session_id": "123", "role": "user", "content": "What is MongoDB Atlas?"}
+]
+\`\`\`
+
+This is the list of messages that you can use to retrieve the chat history.
+
+`} />
+
+</div>
+</details>
+
+**CODE_BLOCK_24**
+
+<details>
+<summary>Answer</summary>
+<div>
+```python
+{"role": "user", "content": user_query}
+```
+<InfoButton title="Storing Chat Message" message={`This code stores a chat message in the collection. Let's break it down:
+
+- store_chat_message(): This is a function you've defined that takes a session ID, role, and content and stores it in the collection
+- session_id: This is the session ID you want to store the chat message for
+- role: This is the role of the message (user or assistant)
+- user_query: This is the user query you want to store
+
+For example, if you had this user query:
+
+\`\`\`python
+user_query = "What is MongoDB Atlas?"
+\`\`\`
+
+The code would store the user query in the collection.
+
+\`\`\`python
+<pymongo.collection.Collection object at 0x1234567890>
+\`\`\`
+
+This is the collection object that you can use to store the chat message in the collection.
+
+`} />
+
+</div>
+</details>
+
+**CODE_BLOCK_25**
+
+<details>
+<summary>Answer</summary>
+<div>
+```python
+store_chat_message(session_id, "user", user_query)
+store_chat_message(session_id, "assistant", answer)
+```
+<InfoButton title="Storing Chat Message" message={`This code stores a chat message in the collection. Let's break it down:
+
+- store_chat_message(): This is a function you've defined that takes a session ID, role, and content and stores it in the collection
+- session_id: This is the session ID you want to store the chat message for
+- role: This is the role of the message (user or assistant)
+- user_query: This is the user query you want to store
+- answer: This is the answer you want to store
+
+For example, if you had this user query:
+
+\`\`\`python
+user_query = "What is MongoDB Atlas?"
+\`\`\`
+
+The code would store the user query in the collection.
+
+\`\`\`python
+<pymongo.collection.Collection object at 0x1234567890>
+\`\`\`
+
+This is the collection object that you can use to store the chat message in the collection.
+
+`} />
+
+</div>
+</details>

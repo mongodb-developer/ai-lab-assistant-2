@@ -1,0 +1,253 @@
+
+import InfoButton from "@site/src/components/InfoButton";
+
+# 🦹 Combine pre-filtering with vector search
+
+Pre-filtering is a technique to optimize vector search by only considering documents that match certain criteria during vector search.
+
+In this section, you will learn how to combine filters with vector search. This mainly involves:
+* Updating the vector search index to include the appropriate filter fields
+* Updating the `$vectorSearch` stage in the aggregation pipeline definition to include the filters
+
+Fill in any `<CODE_BLOCK_N>` placeholders and run the cells under the **🦹‍♀️ Combine pre-filtering with vector search** section in the notebook to experiment with combining pre-filters with your vector search queries.
+
+The answers for code blocks in this section are as follows:
+
+**CODE_BLOCK_12**
+
+<details>
+<summary>Answer</summary>
+<div>
+```json
+{
+    "name": ATLAS_VECTOR_SEARCH_INDEX_NAME,
+    "type": "vectorSearch",
+    "definition": {
+        "fields": [
+            {
+                "type": "vector",
+                "path": "embedding",
+                "numDimensions": 384,
+                "similarity": "cosine"
+            },
+            {"type": "filter", "path": "metadata.productName"}
+        ]
+    }
+}
+```
+<InfoButton title="Creating a Search Index" message={`This code creates a search index on the collection. Let's break it down:
+
+- collection: This is the collection object you created earlier
+- create_search_index(): This is a method of the collection object that takes a model and creates a search index on the collection
+
+For example, if you had this collection:
+
+\`\`\`python
+collection = mongodb_client["mongodb_genai_devday"]["knowledge_base"]
+\`\`\`
+
+The code would create a search index on the collection.
+
+\`\`\`python
+<pymongo.collection.Collection object at 0x1234567890>
+\`\`\`
+
+This is the collection object that you can use to create a search index on the collection.
+
+`} />
+
+</div>
+</details>
+
+**CODE_BLOCK_13**
+
+<details>
+<summary>Answer</summary>
+<div>
+```json
+[
+    {
+        "$vectorSearch": {
+            "index": ATLAS_VECTOR_SEARCH_INDEX_NAME,
+            "path": "embedding",
+            "queryVector": query_embedding,
+            "numCandidates": 150,
+            "limit": 5,
+            "filter": {"metadata.productName": "MongoDB Atlas"}
+        }
+    },
+    {
+        "$project": {
+            "_id": 0,
+            "body": 1,
+            "score": {"$meta": "vectorSearchScore"}
+        }
+    }
+]
+```
+<InfoButton title="Vector Search Pipeline" message={`This code performs a vector search on the data. Let's break it down:
+
+- "$vectorSearch": This is the vector search operator
+- "index": This is the name of the search index you want to use
+- "path": This is the path to the field you want to search on
+- "queryVector": This is the query vector you want to use
+- "numCandidates": This is the number of candidates to consider for the search
+- "limit": This is the number of results to return
+- "filter": This is the filter you want to apply to the search
+
+For example, if you had this pipeline:
+
+\`\`\`python
+pipeline = [
+    {
+        "$vectorSearch": {  
+            "index": ATLAS_VECTOR_SEARCH_INDEX_NAME,
+            "path": "embedding",
+            "queryVector": query_embedding,
+            "numCandidates": 150,
+            "limit": 5,
+            "filter": {"metadata.productName": "MongoDB Atlas"}
+        }
+    },
+    {
+        "$project": {
+            "_id": 0,
+            "body": 1,
+            "score": {"$meta": "vectorSearchScore"}
+        }
+    }
+]
+\`\`\`
+
+The pipeline would perform a vector search on the data and return the results.
+
+`} />
+
+</div>
+</details>
+
+**CODE_BLOCK_14**
+
+<details>
+<summary>Answer</summary>
+<div>
+```json
+{
+    "name": ATLAS_VECTOR_SEARCH_INDEX_NAME,
+    "type": "vectorSearch",
+    "definition": {
+        "fields": [
+            {
+                "type": "vector",
+                "path": "embedding",
+                "numDimensions": 384,
+                "similarity": "cosine"
+            },
+            {"type": "filter", "path": "metadata.contentType"},
+            {"type": "filter", "path": "updated"}
+        ]
+    }
+}
+```
+<InfoButton title="Creating a Search Index" message={`This code creates a search index on the collection. Let's break it down:
+
+- collection: This is the collection object you created earlier
+- create_search_index(): This is a method of the collection object that takes a model and creates a search index on the collection
+
+For example, if you had this collection:
+
+\`\`\`python
+collection = mongodb_client["mongodb_genai_devday"]["knowledge_base"]
+\`\`\`
+
+The code would create a search index on the collection.
+
+\`\`\`python
+<pymongo.collection.Collection object at 0x1234567890>
+\`\`\`
+
+This is the collection object that you can use to create a search index on the collection.
+
+`} />
+
+</div>
+</details>
+
+**CODE_BLOCK_15**
+
+<details>
+<summary>Answer</summary>
+<div>
+```json
+[
+    {
+        "$vectorSearch": {
+            "index": ATLAS_VECTOR_SEARCH_INDEX_NAME,
+            "path": "embedding",
+            "queryVector": query_embedding,
+            "numCandidates": 150,
+            "limit": 5,
+            "filter": {
+                "$and": [
+                    {"metadata.contentType": "Tutorial"},
+                    {"updated": {"$gte": "2024-05-19"}}
+                ]
+            }
+        }
+    },
+    {
+        "$project": {
+            "_id": 0,
+            "body": 1,
+            "updated": 1,
+            "score": {"$meta": "vectorSearchScore"}
+        }
+    }
+]
+```
+<InfoButton title="Vector Search Pipeline" message={`This code performs a vector search on the data. Let's break it down:
+
+- "$vectorSearch": This is the vector search operator
+- "index": This is the name of the search index you want to use
+- "path": This is the path to the field you want to search on
+- "queryVector": This is the query vector you want to use
+- "numCandidates": This is the number of candidates to consider for the search
+- "limit": This is the number of results to return
+- "filter": This is the filter you want to apply to the search
+
+For example, if you had this pipeline:
+
+\`\`\`python
+pipeline = [
+    {
+        "$vectorSearch": {
+            "index": ATLAS_VECTOR_SEARCH_INDEX_NAME,
+            "path": "embedding",
+            "queryVector": query_embedding,
+            "numCandidates": 150,
+            "limit": 5,
+            "filter": {
+                "$and": [
+                    {"metadata.contentType": "Tutorial"},
+                    {"updated": {"$gte": "2024-05-19"}}
+                ]
+            }
+        }
+    },
+    {
+        "$project": {
+            "_id": 0,
+            "body": 1,
+            "updated": 1,
+            "score": {"$meta": "vectorSearchScore"}
+        }
+    }
+]
+\`\`\`
+
+The pipeline would perform a vector search on the data and return the results.
+
+`} />
+
+</div>
+</details>

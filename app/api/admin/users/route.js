@@ -1,14 +1,32 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import User from '@/models/User';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
 
 // GET /api/admin/users - List all users with pagination and filters
 export async function GET(request) {
   try {
+    // Check authentication
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     // Connect to database first
     console.log('Connecting to database...');
-    const mongoose = await connectToDatabase();
-    console.log('Connected to database:', mongoose.connection.db.databaseName);
+    const { conn } = await connectToDatabase();
+    
+    if (!conn || !conn.connection?.readyState) {
+      console.error('Database connection failed');
+      return NextResponse.json(
+        { error: 'Database connection failed' },
+        { status: 500 }
+      );
+    }
+    
+    console.log('Connected to database:', conn.connection.db.databaseName);
+    console.log('Connection state:', conn.connection.readyState);
 
     // Get query parameters
     const { searchParams } = new URL(request.url);
@@ -16,6 +34,8 @@ export async function GET(request) {
     const limit = parseInt(searchParams.get('limit')) || 10;
     const search = searchParams.get('search');
     const isAdmin = searchParams.get('isAdmin');
+
+    console.log('Query parameters:', { page, limit, search, isAdmin });
 
     // Build query
     const query = {};
@@ -29,34 +49,48 @@ export async function GET(request) {
       ];
     }
 
-    console.log('Executing query:', JSON.stringify(query));
+    console.log('MongoDB query:', JSON.stringify(query, null, 2));
 
-    // Get total count for pagination
-    const total = await User.countDocuments(query);
-    console.log('Total users:', total);
+    try {
+      // Get total count for pagination
+      const total = await User.countDocuments(query);
+      console.log('Total users found:', total);
 
-    // Get users with pagination
-    const users = await User.find(query)
-      .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .lean()
-      .exec();
+      // Get users with pagination
+      const users = await User.find(query)
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean()
+        .exec();
 
-    console.log('Found users:', users.length);
+      console.log('Users retrieved:', users.length);
+      console.log('First user (if any):', users[0] ? JSON.stringify(users[0], null, 2) : 'No users found');
 
-    return NextResponse.json({
-      users,
-      pagination: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit)
-      }
-    });
+      return NextResponse.json({
+        users: users || [],
+        pagination: {
+          total: total || 0,
+          page,
+          limit,
+          totalPages: Math.ceil((total || 0) / limit)
+        }
+      });
+    } catch (dbError) {
+      console.error('Database operation error:', dbError);
+      return NextResponse.json(
+        { 
+          error: 'Database operation failed',
+          details: dbError.message
+        },
+        { status: 500 }
+      );
+    }
 
   } catch (error) {
     console.error('Error in GET /api/admin/users:', error);
+    console.error('Stack trace:', error.stack);
+    
     return NextResponse.json(
       { 
         error: 'Failed to fetch users', 

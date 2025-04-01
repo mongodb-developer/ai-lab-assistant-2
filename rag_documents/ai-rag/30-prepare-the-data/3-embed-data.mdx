@@ -1,0 +1,77 @@
+import InfoButton from '@site/src/components/InfoButton';
+
+# 👐 Generate embeddings
+
+To perform vector search on the data, we need to embed it (i.e. generate embedding vectors) before ingesting it into MongoDB.
+
+Fill in any `<CODE_BLOCK_N>` placeholders and run the cells under the **Step 4: Generate embeddings** section in the notebook to embed the chunked articles.
+
+The answers for code blocks in this section are as follows:
+
+**CODE_BLOCK_4**
+
+<details>
+<summary>Answer</summary>
+<div>
+```python
+embedding_model.encode(text)
+```
+<InfoButton title="Embedding Text" message={`This code takes a piece of text and returns a list of embedding vectors. Let's break it down:
+
+- embedding_model: This is the model you've defined earlier that will be used to generate the embeddings
+- encode(): This is a method of the model that takes a piece of text and returns a list of embedding vectors
+
+For example, if you had this text:
+
+\`\`\`python
+text = "This is a very long paragraph about something interesting."
+\`\`\`
+
+The embedding_model.encode() method would return a list of embedding vectors for the text.
+
+\`\`\`python
+[0.1, 0.2, 0.3]
+\`\`\`
+
+This list of vectors can then be used for vector search on the data.
+
+`} />
+</div>
+</details>
+
+**CODE_BLOCK_5**
+
+<details>
+<summary>Answer</summary>
+<div>
+```python
+doc["embedding"] = get_embedding(doc["body"])
+```
+<InfoButton title="Embedding Document" message={`This code takes a document and a field name (in this case, "body") and returns a list of embedding vectors. Let's break it down:
+
+- get_embedding(): This is a function you've defined that takes a piece of text and returns a list of embedding vectors
+- doc: This is the document you want to embed
+- "body": This is the field name of the document you want to embed
+
+For example, if you had this document:
+
+\`\`\`python
+doc = {"body": "This is a very long paragraph about something interesting."}
+\`\`\`
+
+The get_embedding() function would return a list of embedding vectors for the document.
+
+\`\`\`python
+[0.1, 0.2, 0.3]
+\`\`\`
+
+This list of vectors can then be used for vector search on the data.
+
+`} />
+
+</div>
+</details>
+
+:::caution
+If the embedding generation is taking too long (> 5 min), kill/interrupt the cell and move on to the next step with the documents that have been embedded up until that point.
+:::

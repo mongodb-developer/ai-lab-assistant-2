@@ -16,11 +16,19 @@ if (!cached) {
 
 export async function connectToDatabase() {
   if (cached.conn) {
-    console.log('Using cached database connection');
-    return {
-      conn: cached.conn,
-      db: cached.conn.connection.db
-    };
+    try {
+      // Test the cached connection
+      await cached.conn.connection.db.command({ ping: 1 });
+      console.log('Using cached database connection');
+      return {
+        conn: cached.conn,
+        db: cached.conn.connection.db
+      };
+    } catch (error) {
+      console.log('Cached connection failed, creating new connection');
+      cached.conn = null;
+      cached.promise = null;
+    }
   }
 
   if (!cached.promise) {
@@ -48,6 +56,7 @@ export async function connectToDatabase() {
           })
           .catch((error) => {
             console.error('Authentication test failed:', error);
+            cached.promise = null;
             throw error;
           });
       });
@@ -60,10 +69,18 @@ export async function connectToDatabase() {
 
   try {
     cached.conn = await cached.promise;
+    if (!cached.conn) {
+      throw new Error('Failed to establish MongoDB connection: connection is null');
+    }
   } catch (e) {
     cached.promise = null;
+    cached.conn = null;
     console.error('Failed to establish MongoDB connection:', e);
     throw e;
+  }
+
+  if (!cached.conn.connection?.db) {
+    throw new Error('MongoDB connection successful but database handle is missing');
   }
 
   return {

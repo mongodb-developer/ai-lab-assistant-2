@@ -34,7 +34,7 @@ import {
   Search as SearchIcon
 } from '@mui/icons-material';
 
-export default function UserManagement() {
+export default function UserManagement({ initialMode = '' }) {
   // State
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -43,8 +43,8 @@ export default function UserManagement() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalUsers, setTotalUsers] = useState(0);
   const [search, setSearch] = useState('');
-  const [openDialog, setOpenDialog] = useState(false);
-  const [dialogType, setDialogType] = useState(''); // 'add', 'edit', or 'delete'
+  const [openDialog, setOpenDialog] = useState(initialMode === 'add');
+  const [dialogType, setDialogType] = useState(initialMode === 'add' ? 'add' : '');
   const [selectedUser, setSelectedUser] = useState(null);
   const [formData, setFormData] = useState({
     email: '',
@@ -64,17 +64,35 @@ export default function UserManagement() {
       });
       
       const response = await fetch(`/api/admin/users?${searchParams}`);
-      const data = await response.json();
       
+      // Check if response is ok before trying to parse JSON
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch users');
+        const errorText = await response.text();
+        console.error('Server error response:', errorText);
+        try {
+          const errorJson = JSON.parse(errorText);
+          throw new Error(errorJson.error || errorJson.details || 'Failed to fetch users');
+        } catch (parseError) {
+          throw new Error(`Server error: ${response.status} ${response.statusText}`);
+        }
       }
 
-      setUsers(data.users);
-      setTotalUsers(data.pagination.total);
+      // Try to parse the JSON response
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        console.error('JSON Parse error:', parseError);
+        throw new Error('Invalid response from server');
+      }
+
+      setUsers(data.users || []);
+      setTotalUsers(data.pagination?.total || 0);
     } catch (err) {
       console.error('Error fetching users:', err);
-      setError(err.message);
+      setError(err.message || 'Failed to fetch users');
+      setUsers([]);
+      setTotalUsers(0);
     } finally {
       setLoading(false);
     }
@@ -157,13 +175,13 @@ export default function UserManagement() {
           body: JSON.stringify(formData)
         });
       } else if (dialogType === 'edit') {
-        response = await fetch(`/api/admin/users/${selectedUser._id}`, {
-          method: 'PATCH',
+        response = await fetch('/api/admin/users', {
+          method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData)
+          body: JSON.stringify({ id: selectedUser._id, ...formData })
         });
       } else if (dialogType === 'delete') {
-        response = await fetch(`/api/admin/users/${selectedUser._id}`, {
+        response = await fetch(`/api/admin/users?id=${selectedUser._id}`, {
           method: 'DELETE'
         });
       }
@@ -209,7 +227,7 @@ export default function UserManagement() {
 
       {/* Error Alert */}
       {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
+        <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
       )}
@@ -245,19 +263,18 @@ export default function UserManagement() {
                   <TableCell>{user.name}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{user.isAdmin ? 'Yes' : 'No'}</TableCell>
-                  <TableCell>
-                    {user.last_login ? new Date(user.last_login).toLocaleString() : 'Never'}
-                  </TableCell>
+                  <TableCell>{user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'Never'}</TableCell>
                   <TableCell align="right">
                     <IconButton
-                      color="primary"
+                      size="small"
                       onClick={() => handleOpenDialog('edit', user)}
                     >
                       <EditIcon />
                     </IconButton>
                     <IconButton
-                      color="error"
+                      size="small"
                       onClick={() => handleOpenDialog('delete', user)}
+                      color="error"
                     >
                       <DeleteIcon />
                     </IconButton>
@@ -274,66 +291,65 @@ export default function UserManagement() {
           onPageChange={handleChangePage}
           rowsPerPage={rowsPerPage}
           onRowsPerPageChange={handleChangeRowsPerPage}
+          rowsPerPageOptions={[5, 10, 25, 50]}
         />
       </TableContainer>
 
-      {/* Add/Edit Dialog */}
-      <Dialog open={openDialog && (dialogType === 'add' || dialogType === 'edit')} onClose={handleCloseDialog}>
+      {/* User Dialog */}
+      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
         <DialogTitle>
-          {dialogType === 'add' ? 'Add New User' : 'Edit User'}
+          {dialogType === 'add' ? 'Add User' :
+           dialogType === 'edit' ? 'Edit User' :
+           'Delete User'}
         </DialogTitle>
         <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            name="email"
-            label="Email Address"
-            type="email"
-            fullWidth
-            value={formData.email}
-            onChange={handleInputChange}
-            disabled={dialogType === 'edit'}
-          />
-          <TextField
-            margin="dense"
-            name="name"
-            label="Name"
-            type="text"
-            fullWidth
-            value={formData.name}
-            onChange={handleInputChange}
-          />
-          <FormControlLabel
-            control={
-              <Switch
-                checked={formData.isAdmin}
+          {dialogType === 'delete' ? (
+            <DialogContentText>
+              Are you sure you want to delete this user? This action cannot be undone.
+            </DialogContentText>
+          ) : (
+            <>
+              <TextField
+                autoFocus
+                margin="dense"
+                name="name"
+                label="Name"
+                type="text"
+                fullWidth
+                value={formData.name}
                 onChange={handleInputChange}
-                name="isAdmin"
               />
-            }
-            label="Admin Access"
-          />
+              <TextField
+                margin="dense"
+                name="email"
+                label="Email"
+                type="email"
+                fullWidth
+                value={formData.email}
+                onChange={handleInputChange}
+              />
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={formData.isAdmin}
+                    onChange={handleInputChange}
+                    name="isAdmin"
+                  />
+                }
+                label="Admin User"
+              />
+            </>
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog}>Cancel</Button>
-          <Button onClick={handleSubmit} variant="contained">
-            {dialogType === 'add' ? 'Add' : 'Save'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={openDialog && dialogType === 'delete'} onClose={handleCloseDialog}>
-        <DialogTitle>Delete User</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Are you sure you want to delete {selectedUser?.name}? This action cannot be undone.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancel</Button>
-          <Button onClick={handleSubmit} color="error" variant="contained">
-            Delete
+          <Button
+            onClick={handleSubmit}
+            color={dialogType === 'delete' ? 'error' : 'primary'}
+          >
+            {dialogType === 'add' ? 'Add' :
+             dialogType === 'edit' ? 'Save' :
+             'Delete'}
           </Button>
         </DialogActions>
       </Dialog>

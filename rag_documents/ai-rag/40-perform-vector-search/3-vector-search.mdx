@@ -1,0 +1,148 @@
+import InfoButton from "@site/src/components/InfoButton";
+
+# 👐 Perform vector search queries
+
+Now let's run some vector search queries against the data present in MongoDB. 
+
+Fill in any `<CODE_BLOCK_N>` placeholders and run the cells under the **Step 7: Perform vector search on your data** section in the notebook to run vector search queries against your data.
+
+The answers for code blocks in this section are as follows:
+
+**CODE_BLOCK_9**
+
+<details>
+<summary>Answer</summary>
+<div>
+```python
+get_embedding(user_query)
+```
+<InfoButton title="Embedding Query" message={`This code takes a user query and returns a list of embedding vectors. Let's break it down:
+
+- get_embedding(): This is a function you've defined that takes a piece of text and returns a list of embedding vectors
+- user_query: This is the query you want to embed
+
+For example, if you had this query:
+
+\`\`\`python
+user_query = "What is MongoDB Atlas?"
+\`\`\`
+
+The get_embedding() function would return a list of embedding vectors for the query.
+
+\`\`\`python
+[0.1, 0.2, 0.3]
+\`\`\`
+
+This list of vectors can then be used for vector search on the data.
+
+`} />
+
+</div>
+</details>
+
+**CODE_BLOCK_10**
+
+<details>
+<summary>Answer</summary>
+<div>
+```json
+[
+    {
+        "$vectorSearch": {
+            "index": ATLAS_VECTOR_SEARCH_INDEX_NAME,
+            "queryVector": query_embedding,
+            "path": "embedding",
+            "numCandidates": 150,
+            "limit": 5
+        }
+    },
+    {
+        "$project": {
+            "_id": 0,
+            "body": 1,
+            "score": {"$meta": "vectorSearchScore"}
+        }
+    }
+]
+```
+<InfoButton title="Vector Search Pipeline" message={`This code performs a vector search on the data. Let's break it down:
+
+- "$vectorSearch": This is the vector search operator
+- "index": This is the name of the search index you want to use
+- "queryVector": This is the query vector you want to use
+- "path": This is the path to the field you want to search on
+- "numCandidates": This is the number of candidates to consider for the search
+- "limit": This is the number of results to return
+
+For example, if you had this pipeline:
+
+\`\`\`python
+pipeline = [
+    {
+        "$vectorSearch": {
+            "index": ATLAS_VECTOR_SEARCH_INDEX_NAME,
+            "queryVector": query_embedding,
+            "path": "embedding",
+            "numCandidates": 150,
+            "limit": 5
+        }
+    },
+    {
+        "$project": {
+            "_id": 0,
+            "body": 1,
+            "score": {"$meta": "vectorSearchScore"}
+        }
+    }
+]
+\`\`\`
+
+The pipeline would perform a vector search on the data and return the results.
+
+`} />
+
+</div>
+</details>
+
+**CODE_BLOCK_11**
+
+<details>
+<summary>Answer</summary>
+<div>
+```python
+collection.aggregate(pipeline)
+```
+<InfoButton title="Performing Vector Search" message={`This code performs a vector search on the data. Let's break it down:
+
+- collection: This is the collection object you created earlier
+- aggregate(): This is a method of the collection object that takes a pipeline and performs a vector search on the data
+
+For example, if you had this pipeline:
+
+\`\`\`python
+pipeline = [
+    {
+        "$vectorSearch": {
+            "index": ATLAS_VECTOR_SEARCH_INDEX_NAME,
+            "queryVector": query_embedding,
+            "path": "embedding",
+            "numCandidates": 150,
+            "limit": 5
+        }
+    },
+    {
+        "$project": {
+            "_id": 0,
+            "body": 1,
+            "score": {"$meta": "vectorSearchScore"}
+        }
+    }
+]
+\`\`\`
+
+The pipeline would perform a vector search on the data and return the results.
+
+`} />
+
+</div>
+</details>

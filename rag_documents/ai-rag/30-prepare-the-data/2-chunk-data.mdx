@@ -1,0 +1,124 @@
+import InfoButton from '@site/src/components/InfoButton';
+
+# 👐 Chunk up the data
+
+Since we are working with large documents, we first need to break them up into smaller chunks before embedding and storing them in MongoDB.
+
+Fill in any `<CODE_BLOCK_N>` placeholders and run the cells under the **Step 3: Chunk up the data** section in the notebook to chunk up the articles we loaded.
+
+The answers for code blocks in this section are as follows:
+
+**CODE_BLOCK_1**
+
+<details>
+<summary>Answer</summary>
+<div>
+```python
+RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+    model_name="gpt-4", separators=separators, chunk_size=200, chunk_overlap=30
+)
+```
+<InfoButton title="Creating a Text Splitter" message={`This code creates a text splitter using the RecursiveCharacterTextSplitter class, which is commonly used in LangChain for processing text documents. Let's look at each component:
+
+RecursiveCharacterTextSplitter.from_tiktoken_encoder() - This is a factory method that creates a text splitter using tiktoken (OpenAI's tokenizer) for more accurate token counting. It splits text recursively based on a list of separators.
+Parameters being used:
+
+- model_name="gpt-4" - Specifies that the tokenization should match GPT-4's tokenizer
+- separators - A list of characters or strings that define where the text can be split
+- chunk_size=200 - The target size (in tokens) for each chunk of text
+- chunk_overlap=30 - The number of tokens that overlap between consecutive chunks
+
+The purpose of this splitter is to break down large texts into smaller, manageable chunks while:
+
+- Maintaining context through the chunk_overlap
+- Using GPT-4's tokenizer for accurate token counting
+- Splitting text intelligently using the provided separators
+
+This is particularly useful when you need to process large documents while staying within token limits of language models.`} />
+</div>
+</details>
+
+**CODE_BLOCK_2**
+
+<details>
+<summary>Answer</summary>
+<div>
+```python
+text_splitter.split_text(text)
+```
+<InfoButton title="Splitting Text" message={`This code takes a piece of text and splits it into smaller chunks using the text splitter you configured earlier. Let me break down what's happening: 
+
+- text_splitter: This is your RecursiveCharacterTextSplitter instance from the previous code
+- split_text(): This is a method that does the actual splitting
+- text: This is your input text (like a long document or article)
+
+The method will:
+
+- Take your input text
+- Split it according to the rules you defined (chunk size of 200 tokens, overlap of 30 tokens)
+- Use the separators to find natural breaking points (like paragraphs or sentences)
+- Return a list of text chunks
+
+This is useful for tasks like RAG (Retrieval-Augmented Generation), where you need to process large amounts of text efficiently. The chunks can then be embedded and stored in a vector database for efficient retrieval.
+
+For example, if you had this text:
+
+\`\`\`
+text = """This is a very long paragraph about something interesting.
+This is another paragraph with different content.
+And here's a third paragraph that continues the discussion."""
+\`\`\`
+
+The split_text() might return something like:
+
+\`\`\`
+[
+    "This is a very long paragraph about something interesting.",
+    "This is another paragraph with different content.",
+    "And here's a third paragraph that continues the discussion."
+]
+\`\`\`
+
+`} />
+</div>
+</details>
+
+**CODE_BLOCK_3**
+
+<details>
+<summary>Answer</summary>
+<div>
+```python
+get_chunks(doc, "body")
+```
+<InfoButton title="Getting Chunks" message={`This code takes a document and a field name (in this case, "body") and returns a list of chunks. Let's break it down:
+
+- get_chunks(): This is a function you've defined that takes a document and a field name
+- doc: This is the document you want to split into chunks
+- "body": This is the field name of the document you want to split into chunks
+
+The function will:
+
+- Take the document and the field name
+- Split the document into chunks based on the field name
+- Return a list of chunks
+
+For example, if you had this document:
+
+\`\`\`python
+doc = {"body": "This is a very long paragraph about something interesting. This is another paragraph with different content. And here's a third paragraph that continues the discussion."}
+\`\`\`
+
+The get_chunks() function would return:
+
+\`\`\`
+[
+    "This is a very long paragraph about something interesting.",
+    "This is another paragraph with different content.",
+    "And here's a third paragraph that continues the discussion."
+]
+\`\`\`
+
+`} />
+</div>
+</details>

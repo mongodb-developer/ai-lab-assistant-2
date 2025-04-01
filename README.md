@@ -10,7 +10,17 @@
 
 ![AI LAB Assistant](/public/mascot-banner.png)
 
-A Next.js application that provides AI-powered assistance for MongoDB questions and design reviews, featuring Retrieval-Augmented Generation (RAG) for accurate, context-aware responses. This project was created for MongoDB Developer Days to demonstrate how to build intelligent chatbots using MongoDB Atlas Vector Search.
+This AI Lab Assistant is specifically designed to support MongoDB Developer Days workshops. It's a Next.js application that provides AI-powered assistance for MongoDB questions and design reviews, featuring Retrieval-Augmented Generation (RAG) for accurate, context-aware responses. The assistant helps workshop participants by providing contextual help and guidance for various MongoDB workshops and labs.
+
+## Related MongoDB Developer Days Workshops
+
+This AI Lab Assistant supports the following workshops:
+
+- [Introduction to MongoDB](https://mongodb-developer.github.io/intro-lab/) - Get started with MongoDB basics
+- [Building AI Applications with RAG](https://mongodb-developer.github.io/ai-rag-lab/) - Learn how to build AI applications using RAG architecture
+- [Atlas Search](https://mongodb-developer.github.io/search-lab/) - Master MongoDB Atlas Search capabilities
+- [Atlas Vector Search](https://mongodb-developer.github.io/vector-search-lab/) - Deep dive into vector search implementation
+- [SQL to MongoDB Query API](https://mongodb-developer.github.io/sql-to-query-api-lab) - Learn how to transition from SQL to MongoDB queries
 
 ## What is RAG?
 

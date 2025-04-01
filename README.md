@@ -1,5 +1,15 @@
 # MongoDB AI Lab Assistant
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen)](https://nodejs.org)
+[![Next.js Version](https://img.shields.io/badge/next.js-14.1.0-black)](https://nextjs.org)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-green.svg)](https://www.mongodb.com/atlas)
+[![GitHub issues](https://img.shields.io/github/issues/mongodb-developer/ai-lab-assistant-2)](https://github.com/mongodb-developer/ai-lab-assistant-2/issues)
+[![GitHub stars](https://img.shields.io/github/stars/mongodb-developer/ai-lab-assistant-2)](https://github.com/mongodb-developer/ai-lab-assistant-2/stargazers)
+[![Last Commit](https://img.shields.io/github/last-commit/mongodb-developer/ai-lab-assistant-2)](https://github.com/mongodb-developer/ai-lab-assistant-2/commits/main)
+
+![AI LAB Assistant](/public/mascot-banner.png)
+
 A Next.js application that provides AI-powered assistance for MongoDB questions and design reviews, featuring Retrieval-Augmented Generation (RAG) for accurate, context-aware responses. This project was created for MongoDB Developer Days to demonstrate how to build intelligent chatbots using MongoDB Atlas Vector Search.
 
 ## What is RAG?

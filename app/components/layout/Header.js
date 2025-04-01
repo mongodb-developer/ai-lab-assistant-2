@@ -16,7 +16,8 @@ import {
   ListItem, 
   ListItemText, 
   ListItemIcon, 
-  Divider
+  Divider,
+  Tooltip
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
@@ -25,6 +26,7 @@ import InfoIcon from '@mui/icons-material/Info';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import LogoutIcon from '@mui/icons-material/Logout';
+import GitHubIcon from '@mui/icons-material/GitHub';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthProvider';
@@ -122,6 +124,23 @@ export default function Header() {
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Tooltip title="View on GitHub">
+            <IconButton
+              color="primary"
+              component="a"
+              href="https://github.com/mongodb-developer/ai-lab-assistant-2"
+              target="_blank"
+              rel="noopener noreferrer"
+              sx={{
+                mr: 1,
+                '&:hover': {
+                  backgroundColor: 'rgba(0, 104, 74, 0.04)',
+                },
+              }}
+            >
+              <GitHubIcon />
+            </IconButton>
+          </Tooltip>
           <IconButton
             onClick={handleMenu}
             color="primary"

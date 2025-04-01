@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { connectToDatabase } from '@/lib/mongodb';
-import { ObjectId } from 'mongodb';
+import DesignReview from '@/models/designReview';
 
 export async function POST(request) {
   try {
@@ -11,31 +11,20 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { title, description, requirements, attachmentUrls } = await request.json();
+    const data = await request.json();
     
-    if (!title || !description) {
-      return NextResponse.json({ error: 'Title and description are required' }, { status: 400 });
-    }
-
-    const { db } = await connectToDatabase();
-    
-    const designReview = {
-      title,
-      description,
-      requirements: requirements || '',
-      attachment_urls: attachmentUrls || [],
-      status: 'pending',
+    // Create new design review with user ID
+    const designReview = new DesignReview({
+      ...data,
       user_id: session.user.id,
-      user_name: session.user.name,
-      created_at: new Date(),
-      updated_at: new Date()
-    };
+      submitted_at: new Date()
+    });
     
-    const result = await db.collection('design_reviews').insertOne(designReview);
+    await designReview.save();
     
     return NextResponse.json({
       message: 'Design review request submitted successfully',
-      request_id: result.insertedId.toString()
+      request_id: designReview._id.toString()
     }, { status: 201 });
   } catch (error) {
     console.error('Error submitting design review:', error);
@@ -50,7 +39,7 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { db } = await connectToDatabase();
+    await connectToDatabase();
     
     let query = {};
     
@@ -59,22 +48,86 @@ export async function GET(request) {
       query.user_id = session.user.id;
     }
     
-    const designReviews = await db.collection('design_reviews')
-      .find(query)
-      .sort({ created_at: -1 })
-      .toArray();
+    const designReviews = await DesignReview.find(query)
+      .sort({ submitted_at: -1 })
+      .lean();
     
-    // Convert ObjectIds to strings for JSON serialization
-    const serializedReviews = designReviews.map(review => ({
-      ...review,
-      _id: review._id.toString(),
-      created_at: review.created_at.toISOString(),
-      updated_at: review.updated_at.toISOString()
-    }));
-    
-    return NextResponse.json(serializedReviews);
+    return NextResponse.json(designReviews);
   } catch (error) {
     console.error('Error fetching design reviews:', error);
+    return NextResponse.json({ error: 'An internal error occurred' }, { status: 500 });
+  }
+}
+
+export async function PUT(request) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { id, ...updateData } = await request.json();
+    
+    if (!id) {
+      return NextResponse.json({ error: 'Review ID is required' }, { status: 400 });
+    }
+
+    const designReview = await DesignReview.findById(id);
+    
+    if (!designReview) {
+      return NextResponse.json({ error: 'Design review not found' }, { status: 404 });
+    }
+
+    // Only allow admins or the original submitter to update
+    if (!session.user.isAdmin && designReview.user_id.toString() !== session.user.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    }
+
+    // Update the review
+    Object.assign(designReview, updateData);
+    await designReview.save();
+
+    return NextResponse.json({
+      message: 'Design review updated successfully',
+      review: designReview
+    });
+  } catch (error) {
+    console.error('Error updating design review:', error);
+    return NextResponse.json({ error: 'An internal error occurred' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { id } = await request.json();
+    
+    if (!id) {
+      return NextResponse.json({ error: 'Review ID is required' }, { status: 400 });
+    }
+
+    const designReview = await DesignReview.findById(id);
+    
+    if (!designReview) {
+      return NextResponse.json({ error: 'Design review not found' }, { status: 404 });
+    }
+
+    // Only allow admins or the original submitter to delete
+    if (!session.user.isAdmin && designReview.user_id.toString() !== session.user.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    }
+
+    await designReview.deleteOne();
+
+    return NextResponse.json({
+      message: 'Design review deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error deleting design review:', error);
     return NextResponse.json({ error: 'An internal error occurred' }, { status: 500 });
   }
 }

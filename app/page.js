@@ -47,19 +47,27 @@ export default function Home() {
             sx={{ 
               p: 2, 
               borderRadius: 2, 
-              width: '100%', 
-              height: '300px',
+              width: '100%',
+              minHeight: { xs: '200px', sm: '250px', md: '300px' },
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              bgcolor: 'grey.100'
+              bgcolor: 'grey.100',
+              overflow: 'hidden'
             }}
           >
-            <Typography variant="body1" color="text.secondary">
-              MongoDB Logo Placeholder
-            </Typography>
-            {/* Replace with actual MongoDB logo */}
-            {/* <Image src="/mongodb-logo.png" alt="MongoDB Logo" width={400} height={250} /> */}
+            <img 
+              src="/lab-assistant-mascot.png" 
+              alt="MongoDB Logo" 
+              style={{ 
+                maxWidth: '100%',
+                maxHeight: '100%',
+                width: 'auto',
+                height: 'auto',
+                objectFit: 'contain',
+                padding: '1rem'
+              }}
+            />
           </Paper>
         </Grid>
       </Grid>

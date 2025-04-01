@@ -36,7 +36,7 @@ export default function AboutPage() {
           About MongoDB AI Lab Assistant
         </Typography>
         <Typography variant="h5" color="text.secondary" sx={{ mb: 4 }}>
-          Your intelligent companion for MongoDB development and learning
+          Your intelligent companion for MongoDB Developer Days Workshops
         </Typography>
       </Box>
 
@@ -145,31 +145,37 @@ export default function AboutPage() {
           Technical Details
         </Typography>
         <Box sx={{ mt: 2 }}>
-          <Accordion>
+          <Accordion defaultExpanded>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="h6">Vector Search Implementation</Typography>
+              <Typography variant="h6">RAG Implementation</Typography>
             </AccordionSummary>
             <AccordionDetails>
               <Typography paragraph>
-                The system uses MongoDB Atlas Vector Search to enable semantic search capabilities:
+                Our RAG (Retrieval Augmented Generation) system enhances AI responses by providing relevant context from our knowledge base:
               </Typography>
               <List>
                 <ListItem>
                   <ListItemText 
-                    primary="• Embedding Generation"
-                    secondary="Questions are converted into high-dimensional vectors using advanced embedding models"
+                    primary="Document Processing"
+                    secondary="Documents are split into semantic chunks and converted into vector embeddings using OpenAI's text-embedding-ada-002 model"
                   />
                 </ListItem>
                 <ListItem>
                   <ListItemText 
-                    primary="• Similarity Search"
-                    secondary="Uses cosine similarity to find the most relevant matches in the knowledge base"
+                    primary="Knowledge Base"
+                    secondary="Supports multiple document formats including PDF, Markdown, and Word documents, with automatic chunking and embedding generation"
                   />
                 </ListItem>
                 <ListItem>
                   <ListItemText 
-                    primary="• Result Ranking"
-                    secondary="Implements sophisticated ranking algorithms to ensure the most relevant responses"
+                    primary="Context Retrieval"
+                    secondary="Uses MongoDB Atlas Vector Search to find the most relevant document chunks for each query"
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemText 
+                    primary="Response Generation"
+                    secondary="Combines retrieved context with LLM capabilities to generate accurate, contextual responses"
                   />
                 </ListItem>
               </List>
@@ -178,29 +184,72 @@ export default function AboutPage() {
 
           <Accordion>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="h6">Response Processing</Typography>
+              <Typography variant="h6">Question Processing System</Typography>
             </AccordionSummary>
             <AccordionDetails>
               <Typography paragraph>
-                Responses are generated through a multi-step process:
+                Our system implements a sophisticated hybrid search approach combining vector similarity with text-based search:
               </Typography>
               <List>
                 <ListItem>
                   <ListItemText 
-                    primary="1. Context Analysis"
-                    secondary="Understanding the full context of the conversation and user intent"
+                    primary="Vector Search Stage"
+                    secondary="Uses MongoDB's vector search to find semantically similar questions, processing the top 10 candidates from 100 potential matches"
                   />
                 </ListItem>
                 <ListItem>
                   <ListItemText 
-                    primary="2. Knowledge Retrieval"
-                    secondary="Finding relevant information from the MongoDB documentation and best practices"
+                    primary="Text Search Stage"
+                    secondary="Performs fuzzy text matching across questions, answers, and titles with up to 2 edits tolerance"
                   />
                 </ListItem>
                 <ListItem>
                   <ListItemText 
-                    primary="3. Response Generation"
-                    secondary="Creating clear, accurate responses with practical examples when appropriate"
+                    primary="Result Processing"
+                    secondary="Combines vector similarity (70%) and text similarity (30%) scores for optimal matching"
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemText 
+                    primary="Similarity Threshold"
+                    secondary="Implements configurable similarity thresholds to ensure high-quality matches"
+                  />
+                </ListItem>
+              </List>
+            </AccordionDetails>
+          </Accordion>
+
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6">Database Architecture</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Typography paragraph>
+                The system utilizes MongoDB's advanced features for efficient document storage and retrieval:
+              </Typography>
+              <List>
+                <ListItem>
+                  <ListItemText 
+                    primary="RAG Documents Collection"
+                    secondary="Stores document content, chunks, embeddings, and metadata for efficient retrieval"
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemText 
+                    primary="Vector Search Indexes"
+                    secondary="Utilizes Atlas Vector Search with 1536-dimensional vectors and cosine similarity"
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemText 
+                    primary="Text Search Indexes"
+                    secondary="Implements standard text search with analyzers for question, answer, and title fields"
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemText 
+                    primary="Performance Optimization"
+                    secondary="Uses caching for embeddings, batch processing for documents, and efficient chunking strategies"
                   />
                 </ListItem>
               </List>
@@ -230,9 +279,21 @@ export default function AboutPage() {
                     AI/ML Components:
                   </Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                    <Chip label="Natural Language Processing" color="secondary" />
-                    <Chip label="Vector Embeddings" color="secondary" />
-                    <Chip label="Semantic Search" color="secondary" />
+                    <Chip label="OpenAI Embeddings" color="secondary" />
+                    <Chip label="text-embedding-ada-002" color="secondary" />
+                    <Chip label="Hybrid Search" color="secondary" />
+                    <Chip label="Document Chunking" color="secondary" />
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sx={{ mt: 2 }}>
+                  <Typography variant="subtitle1" gutterBottom>
+                    Document Processing:
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                    <Chip label="PDF Processing" color="success" />
+                    <Chip label="Word Documents" color="success" />
+                    <Chip label="Markdown" color="success" />
+                    <Chip label="Semantic Chunking" color="success" />
                   </Box>
                 </Grid>
               </Grid>

@@ -31,8 +31,8 @@ export default function UploadDocument() {
       'application/pdf': ['.pdf'],
       'text/plain': ['.txt'],
       'application/msword': ['.doc'],
-      'application/markdown': ['.md'],
-      'application/markdown': ['.mdx'],
+      'text/markdown': ['.md'],
+      'text/x-markdown': ['.mdx'],
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx']
     },
     maxFiles: 1,

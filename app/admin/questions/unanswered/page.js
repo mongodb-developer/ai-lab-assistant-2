@@ -1,7 +1,7 @@
 'use client';
 
 import { Box, Typography } from '@mui/material';
-import QuestionManagement from '@/components/admin/QuestionManagement';
+import UnansweredQuestionsList from '../../../components/admin/UnansweredQuestionsList';
 
 export default function UnansweredQuestionsPage() {
   return (
@@ -14,7 +14,7 @@ export default function UnansweredQuestionsPage() {
           Review and respond to pending questions
         </Typography>
       </Box>
-      <QuestionManagement initialFilter={{ answered: false }} />
+      <UnansweredQuestionsList />
     </>
   );
 } 

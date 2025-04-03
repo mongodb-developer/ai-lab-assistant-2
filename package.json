@@ -8,8 +8,6 @@
     "start": "next start",
     "lint": "next lint",
     "deploy": "node scripts/deploy.js",
-    "migrate": "node scripts/migrations/001_add_rag_tracking.js",
-    "migrate:rollback": "node scripts/migrations/001_add_rag_tracking.js rollback",
     "import-docs": "node scripts/import-docs.js"
   },
   "dependencies": {

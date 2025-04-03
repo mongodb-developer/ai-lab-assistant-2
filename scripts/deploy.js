@@ -45,28 +45,6 @@ function restoreBackup(backupDir) {
   console.log('Backup restored successfully');
 }
 
-function runMigration() {
-  console.log('Running database migration...');
-  try {
-    execSync('node scripts/migrations/001_add_rag_tracking.js', { stdio: 'inherit' });
-    console.log('Migration completed successfully');
-  } catch (error) {
-    console.error('Migration failed:', error);
-    throw error;
-  }
-}
-
-function rollbackMigration() {
-  console.log('Rolling back database migration...');
-  try {
-    execSync('node scripts/migrations/001_add_rag_tracking.js rollback', { stdio: 'inherit' });
-    console.log('Rollback completed successfully');
-  } catch (error) {
-    console.error('Rollback failed:', error);
-    throw error;
-  }
-}
-
 function deploy() {
   const backupDir = createBackup();
   
@@ -74,9 +52,6 @@ function deploy() {
     // Install dependencies
     console.log('Installing dependencies...');
     execSync('npm install', { stdio: 'inherit' });
-
-    // Run migration
-    runMigration();
 
     // Build the application
     console.log('Building application...');
@@ -88,7 +63,6 @@ function deploy() {
     console.log('Rolling back changes...');
     
     try {
-      rollbackMigration();
       restoreBackup(backupDir);
       console.log('Rollback completed successfully');
     } catch (rollbackError) {
@@ -105,4 +79,4 @@ if (require.main === module) {
   deploy();
 }
 
-module.exports = { deploy, createBackup, restoreBackup, runMigration, rollbackMigration }; 
+module.exports = { deploy, createBackup, restoreBackup }; 

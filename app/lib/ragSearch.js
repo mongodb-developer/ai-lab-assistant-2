@@ -2,6 +2,7 @@ import { generateEmbedding } from './embeddings';
 import RagDocument from '../models/RagDocument';
 import RagChunk from '../models/RagChunk';
 import RagQuery from '../models/RagQuery';
+import RagUsageMetrics from '../models/RagUsageMetrics';
 
 const MAX_CHUNKS = 5;
 const SIMILARITY_THRESHOLD = 0.7;
@@ -17,12 +18,33 @@ export async function searchRagDocuments(query, options = {}) {
     maxChunks = MAX_CHUNKS,
     similarityThreshold = SIMILARITY_THRESHOLD,
     category,
-    tags
+    tags,
+    debug = false
   } = options;
+
+  const debugInfo = debug ? {
+    documentsSearched: 0,
+    chunksRetrieved: 0,
+    topChunkScore: null,
+    selectedChunks: [],
+    errors: [],
+    timings: {
+      embedding: 0,
+      search: 0,
+      total: 0
+    }
+  } : null;
+
+  const startTime = debug ? Date.now() : null;
 
   try {
     // Generate embedding for the query
+    console.log('Generating query embedding...');
+    const embeddingStart = debug ? Date.now() : null;
     const queryEmbedding = await generateEmbedding(query);
+    if (debug) {
+      debugInfo.timings.embedding = Date.now() - embeddingStart;
+    }
     
     // Check if we have documents with embeddings first
     const docsCount = await RagChunk.countDocuments();
@@ -30,11 +52,21 @@ export async function searchRagDocuments(query, options = {}) {
     
     if (docsCount === 0) {
       console.log('No chunks found, returning empty results');
-      return [];
+      if (debug) {
+        debugInfo.errors.push('No chunks found in database');
+      }
+      return { chunks: [], debugInfo };
+    }
+
+    if (debug) {
+      debugInfo.documentsSearched = docsCount;
     }
     
     // Try with a fallback approach if vector search isn't available
     try {
+      console.log('Executing vector search...');
+      const searchStart = debug ? Date.now() : null;
+
       // Build the aggregation pipeline with vector search
       const pipeline = [
         // Vector search on chunk embeddings
@@ -106,75 +138,123 @@ export async function searchRagDocuments(query, options = {}) {
         }
       ];
 
-        // Execute the search
-        const results = await RagChunk.aggregate(pipeline);
-        return results;
-      } catch (vectorError) {
-        // If vector search fails (likely due to missing index), use a simpler approach
-        console.error('Vector search failed, using fallback method:', vectorError.message);
-        
-        // Fallback to simpler query without vector search
-        const simplePipeline = [
-          // Sort by recency as a fallback
-          { $sort: { createdAt: -1 } },
-          
-          // Limit results
-          { $limit: maxChunks },
-          
-          // Lookup the parent document to get title and metadata
-          {
-            $lookup: {
-              from: 'rag_documents',
-              localField: 'document_id',
-              foreignField: '_id',
-              as: 'document'
-            }
-          },
-          
-          // Unwind the result of lookup
-          { $unwind: '$document' },
-          
-          // Project final results
-          {
-            $project: {
-              documentId: '$document_id',
-              title: '$document.title',
-              chunk: {
-                content: '$content',
-                metadata: '$metadata'
-              },
-              score: 0.5, // Default score for fallback results
-              documentMetadata: '$document.metadata'
-            }
-          }
-        ];
-        
-        const fallbackResults = await RagChunk.aggregate(simplePipeline);
-        return fallbackResults;
+      // Execute the search
+      console.log('Executing aggregation pipeline...');
+      const results = await RagChunk.aggregate(pipeline);
+      
+      if (debug) {
+        debugInfo.timings.search = Date.now() - searchStart;
+        debugInfo.chunksRetrieved = results.length;
+        if (results.length > 0) {
+          debugInfo.topChunkScore = results[0].score;
+          debugInfo.selectedChunks = results.map(r => ({
+            title: r.title,
+            content: r.chunk.content,
+            score: r.score,
+            metadata: r.documentMetadata
+          }));
+        }
       }
-    } catch (error) {
-      console.error('Error in RAG search:', error);
-      return [];
+
+      console.log(`Found ${results.length} relevant chunks`);
+      
+      if (debug) {
+        debugInfo.timings.total = Date.now() - startTime;
+      }
+      
+      return { chunks: results, debugInfo };
+
+    } catch (vectorError) {
+      console.error('Vector search failed:', vectorError);
+      if (debug) {
+        debugInfo.errors.push(`Vector search failed: ${vectorError.message}`);
+      }
+      
+      // Fallback to simpler query without vector search
+      console.log('Using fallback search method...');
+      const fallbackStart = debug ? Date.now() : null;
+      
+      const simplePipeline = [
+        // Sort by recency as a fallback
+        { $sort: { createdAt: -1 } },
+        
+        // Limit results
+        { $limit: maxChunks },
+        
+        // Lookup the parent document to get title and metadata
+        {
+          $lookup: {
+            from: 'rag_documents',
+            localField: 'document_id',
+            foreignField: '_id',
+            as: 'document'
+          }
+        },
+        
+        // Unwind the result of lookup
+        { $unwind: '$document' },
+        
+        // Project final results
+        {
+          $project: {
+            documentId: '$document_id',
+            title: '$document.title',
+            chunk: {
+              content: '$content',
+              metadata: '$metadata'
+            },
+            score: 0.5, // Default score for fallback results
+            documentMetadata: '$document.metadata'
+          }
+        }
+      ];
+      
+      const fallbackResults = await RagChunk.aggregate(simplePipeline);
+      
+      if (debug) {
+        debugInfo.timings.search = Date.now() - fallbackStart;
+        debugInfo.chunksRetrieved = fallbackResults.length;
+        debugInfo.selectedChunks = fallbackResults.map(r => ({
+          title: r.title,
+          content: r.chunk.content,
+          score: 0.5,
+          metadata: r.documentMetadata
+        }));
+      }
+
+      console.log(`Found ${fallbackResults.length} chunks using fallback method`);
+      
+      if (debug) {
+        debugInfo.timings.total = Date.now() - startTime;
+      }
+      
+      return { chunks: fallbackResults, debugInfo };
     }
+  } catch (error) {
+    console.error('Error in RAG search:', error);
+    if (debug) {
+      debugInfo.errors.push(`RAG search error: ${error.message}`);
+      debugInfo.timings.total = Date.now() - startTime;
+    }
+    return { chunks: [], debugInfo };
+  }
 }
 
 /**
  * Retrieves relevant chunks for a question and builds context
  * @param {string} question - The user's question
  * @param {Object} options - Search options
- * @returns {Promise<{chunks: Array<Object>, context: string}>} Retrieved chunks and built context
+ * @returns {Promise<{chunks: Array<Object>, context: string, debugInfo: Object}>} Retrieved chunks and built context
  */
 export async function getRelevantChunks(question, options = {}) {
-  const chunks = await searchRagDocuments(question, options);
-  
-  // Build context from chunks
-  const context = chunks
-    .map(result => `From "${result.title}":\n${result.chunk.content}`)
-    .join('\n\n');
+  const { chunks, debugInfo } = await searchRagDocuments(question, {
+    ...options,
+    debug: options.debug
+  });
   
   return {
     chunks,
-    context
+    debugInfo
   };
 }
 
@@ -183,9 +263,11 @@ export async function getRelevantChunks(question, options = {}) {
  * @param {string} question - The user's question
  * @param {Array<Object>} chunks - Retrieved chunks
  * @param {string} response - The final response
+ * @param {string} userId - The user's ID
+ * @param {string} chatSessionId - The chat session ID
  * @returns {Promise<void>}
  */
-export async function trackRagQuery(question, chunks, response) {
+export async function trackRagQuery(question, chunks, response, userId, chatSessionId) {
   try {
     const questionEmbedding = await generateEmbedding(question);
     
@@ -204,6 +286,7 @@ export async function trackRagQuery(question, chunks, response) {
       };
     });
     
+    // Create the RAG query record
     const ragQuery = new RagQuery({
       question,
       question_embedding: questionEmbedding,
@@ -212,6 +295,20 @@ export async function trackRagQuery(question, chunks, response) {
     });
     
     await ragQuery.save();
+    
+    // Record usage metrics for each chunk
+    const usageMetrics = chunks.map(chunk => ({
+      document_id: chunk.documentId,
+      chunk_id: chunk.chunk._id,
+      query_id: ragQuery._id,
+      user_id: userId,
+      chat_session_id: chatSessionId,
+      relevance_score: chunk.score || 0.5
+    }));
+    
+    // Save all usage metrics
+    await RagUsageMetrics.insertMany(usageMetrics);
+    
   } catch (error) {
     console.error('Error tracking RAG query:', error);
     // Don't throw the error as this is non-critical functionality

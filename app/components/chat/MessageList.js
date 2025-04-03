@@ -1,15 +1,35 @@
 // app/components/chat/MessageList.js
-import { Box, Typography, IconButton, Tooltip, Paper, Chip, Collapse, Card, CardContent, Avatar } from '@mui/material';
-import ThumbUpIcon from '@mui/icons-material/ThumbUp';
-import ThumbDownIcon from '@mui/icons-material/ThumbDown';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+'use client';
+
+import { useState, useEffect } from 'react';
+import { 
+  Box, 
+  Typography, 
+  Chip, 
+  CircularProgress,
+  Tooltip,
+  IconButton,
+  Collapse,
+  Paper,
+  Avatar
+} from '@mui/material';
+import { 
+  SentimentVeryDissatisfied as NegativeIcon,
+  SentimentSatisfied as NeutralIcon,
+  SentimentVerySatisfied as PositiveIcon,
+  Info as InfoIcon,
+  ExpandMore as ExpandMoreIcon,
+  ExpandLess as ExpandLessIcon,
+  ContentCopy as ContentCopyIcon,
+  ThumbUp as ThumbUpIcon,
+  ThumbDown as ThumbDownIcon,
+  Person as PersonIcon,
+  SmartToy as SmartToyIcon
+} from '@mui/icons-material';
 import ReactMarkdown from 'react-markdown';
-import DatabaseIcon from '@mui/icons-material/Storage';
-import SmartToyIcon from '@mui/icons-material/SmartToy';
-import BugReportIcon from '@mui/icons-material/BugReport';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import PersonIcon from '@mui/icons-material/Person';
+import SentimentDisplay from '../feedback/SentimentDisplay';
+import QuickFeedback from '../feedback/QuickFeedback';
+import { submitQuickFeedback } from '../../lib/feedbackService';
 
 /**
  * MessageList component - Displays chat messages with Markdown support
@@ -27,108 +47,96 @@ import PersonIcon from '@mui/icons-material/Person';
 const DebugPanel = ({ debug }) => {
   if (!debug) return null;
 
+  console.log('DebugPanel received debug data:', debug);
+
   return (
-    <Card variant="outlined" sx={{ mt: 2, bgcolor: '#FAFAFA' }}>
-      <CardContent>
-        <Typography variant="h6" gutterBottom sx={{ fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 1 }}>
-          <BugReportIcon fontSize="small" />
-          Question Processing Details
+    <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.100', borderRadius: 1 }}>
+      <Typography variant="subtitle2" color="primary" gutterBottom>
+        Processing Details
+      </Typography>
+
+      {/* Database Status */}
+      <Box sx={{ mb: 2 }}>
+        <Typography variant="body2" color="text.secondary">
+          Database Status:
         </Typography>
+        <Typography variant="body2">
+          Questions Collection: {debug.hasQuestionCollection ? '✅' : '❌'}
+          {debug.totalDocs !== undefined && ` (${debug.totalDocs} docs)`}
+        </Typography>
+      </Box>
 
-        {/* Collection Info */}
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="subtitle2" color="primary">Database Status:</Typography>
-          <Typography variant="body2">
-            Collection: {debug.hasQuestionCollection ? '✅ Found' : '❌ Not Found'}
-          </Typography>
-          <Typography variant="body2">
-            Total Documents: {debug.totalDocs}
-          </Typography>
-        </Box>
+      {/* Vector Search Configuration */}
+      <Box sx={{ mb: 2 }}>
+        <Typography variant="body2" color="text.secondary">
+          Vector Search Config:
+        </Typography>
+        <Typography variant="body2">
+          Embedding Length: {debug.embeddingLength}
+          <br />
+          Similarity Threshold: {debug.similarityThreshold}
+          <br />
+          Num Candidates: {debug.numCandidates}
+        </Typography>
+      </Box>
 
-        {/* Vector Search Info */}
+      {/* RAG Information */}
+      {debug.ragInfo && (
         <Box sx={{ mb: 2 }}>
-          <Typography variant="subtitle2" color="primary">Vector Search Configuration:</Typography>
+          <Typography variant="subtitle2" color="primary">RAG Details:</Typography>
           <Typography variant="body2">
-            Embedding Length: {debug.embeddingLength} dimensions
+            Documents Searched: {debug.ragInfo.documentsSearched}
+            <br />
+            Chunks Retrieved: {debug.ragInfo.chunksRetrieved}
+            <br />
+            Top Chunk Score: {debug.ragInfo.topChunkScore?.toFixed(4)}
           </Typography>
-          <Typography variant="body2">
-            Similarity Threshold: {debug.similarityThreshold}
-          </Typography>
-          <Typography variant="body2">
-            Search Candidates: {debug.numCandidates}
-          </Typography>
-          {debug.vectorSearchQuery && (
-            <>
-              <Typography variant="subtitle2" color="primary" sx={{ mt: 1 }}>Search Pipeline:</Typography>
-              <Box 
-                component="pre"
-                sx={{ 
-                  mt: 1,
-                  p: 1,
-                  bgcolor: 'background.paper',
-                  borderRadius: 1,
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  fontSize: '0.75rem',
-                  overflow: 'auto',
-                  maxHeight: '200px'
-                }}
-              >
-                {JSON.stringify(debug.vectorSearchQuery, null, 2)}
-              </Box>
-            </>
+          {debug.ragInfo.selectedChunks && debug.ragInfo.selectedChunks.length > 0 && (
+            <Box sx={{ mt: 1 }}>
+              <Typography variant="body2" color="text.secondary">
+                Selected Chunks:
+              </Typography>
+              {debug.ragInfo.selectedChunks.map((chunk, i) => (
+                <Box 
+                  key={i}
+                  sx={{ 
+                    mt: 1,
+                    p: 1,
+                    bgcolor: 'background.paper',
+                    borderRadius: 1,
+                    border: '1px solid',
+                    borderColor: 'divider'
+                  }}
+                >
+                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                    From "{chunk.title}":
+                  </Typography>
+                  <Typography variant="body2" sx={{ 
+                    mt: 0.5,
+                    color: 'text.secondary',
+                    whiteSpace: 'pre-wrap'
+                  }}>
+                    {chunk.content.substring(0, 150)}...
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                    Score: {chunk.score.toFixed(4)}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
           )}
         </Box>
+      )}
 
-        {/* Search Results */}
-        {debug.rawResults && debug.rawResults.length > 0 && (
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="subtitle2" color="primary">Vector Search Results:</Typography>
-            {debug.rawResults.slice(0, 3).map((result, i) => (
-              <Box 
-                key={i} 
-                sx={{ 
-                  mt: 1,
-                  p: 1,
-                  bgcolor: 'background.paper',
-                  borderRadius: 1,
-                  border: '1px solid',
-                  borderColor: 'divider'
-                }}
-              >
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                  {i + 1}. "{result.question}"
-                </Typography>
-                <Box sx={{ display: 'flex', gap: 2, mt: 0.5 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    Score: {result.score.toFixed(4)}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Module: {result.module || 'none'}
-                  </Typography>
-                  {result.distance && (
-                    <Typography variant="body2" color="text.secondary">
-                      Distance: {result.distance.toFixed(4)}
-                    </Typography>
-                  )}
-                </Box>
-              </Box>
-            ))}
-            {debug.rawResults.length > 3 && (
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                + {debug.rawResults.length - 3} more results
-              </Typography>
-            )}
-          </Box>
-        )}
-
-        {/* RAG Information (if applicable) */}
-        {debug.finalSource === 'rag_llm' && (
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="subtitle2" color="primary">RAG Information:</Typography>
+      {/* Search Pipeline Results */}
+      {debug.rawResults && debug.rawResults.length > 0 && (
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="subtitle2" color="primary">Vector Search Results:</Typography>
+          {debug.rawResults.slice(0, 3).map((result, i) => (
             <Box 
+              key={i} 
               sx={{ 
+                mt: 1,
                 p: 1,
                 bgcolor: 'background.paper',
                 borderRadius: 1,
@@ -136,55 +144,44 @@ const DebugPanel = ({ debug }) => {
                 borderColor: 'divider'
               }}
             >
-              <Typography variant="body2">
-                Chunks Found: {debug.ragChunksFound || 0}
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                {i + 1}. "{result.question}"
               </Typography>
-              {debug.topRagScore !== undefined && (
-                <Typography variant="body2">
-                  Top Chunk Score: {debug.topRagScore.toFixed(4)}
+              <Box sx={{ display: 'flex', gap: 2, mt: 0.5 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Score: {result.score.toFixed(4)}
                 </Typography>
-              )}
-              <Typography variant="body2">
-                Used RAG Context: {debug.usedRagContext ? '✅ Yes' : '❌ No'}
-              </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Module: {result.module || 'none'}
+                </Typography>
+                {result.distance && (
+                  <Typography variant="body2" color="text.secondary">
+                    Distance: {result.distance.toFixed(4)}
+                  </Typography>
+                )}
+              </Box>
             </Box>
-          </Box>
-        )}
-
-        {/* Final Result */}
-        <Box>
-          <Typography variant="subtitle2" color="primary">Final Result:</Typography>
-          <Box 
-            sx={{ 
-              p: 1,
-              bgcolor: 'background.paper',
-              borderRadius: 1,
-              border: '1px solid',
-              borderColor: 'divider'
-            }}
-          >
-            <Typography variant="body2">
-              Source: {debug.finalSource}
+          ))}
+          {debug.rawResults.length > 3 && (
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              + {debug.rawResults.length - 3} more results
             </Typography>
-            {debug.matchedQuestion && (
-              <Typography variant="body2">
-                Matched Question: "{debug.matchedQuestion}"
-              </Typography>
-            )}
-            {debug.finalScore && (
-              <Typography variant="body2">
-                Match Score: {debug.finalScore.toFixed(4)}
-              </Typography>
-            )}
-            {debug.processingTime && (
-              <Typography variant="body2" color="text.secondary">
-                Processing Time: {debug.processingTime}ms
-              </Typography>
-            )}
-          </Box>
+          )}
         </Box>
-      </CardContent>
-    </Card>
+      )}
+
+      {/* Final Result Source */}
+      <Box sx={{ mb: 2 }}>
+        <Typography variant="body2" color="text.secondary">
+          Response Source: {debug.finalSource}
+          {debug.matchedQuestion && ` (Matched: "${debug.matchedQuestion}")`}
+          {debug.finalScore && ` Score: ${debug.finalScore.toFixed(4)}`}
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Processing Time: {debug.processingTime}ms
+        </Typography>
+      </Box>
+    </Box>
   );
 };
 
@@ -194,8 +191,65 @@ export default function MessageList({
   onFeedback, 
   feedbackSent,
   expandedMessageId,
-  onToggleExpand
+  onToggleExpand,
+  sessionId,
+  workshopId = 'default',
+  moduleId = ''
 }) {
+  const [quickFeedbackOpen, setQuickFeedbackOpen] = useState(false);
+  const [selectedMessageId, setSelectedMessageId] = useState(null);
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [localExpandedMessageId, setLocalExpandedMessageId] = useState(expandedMessageId);
+
+  // Debug logging
+  useEffect(() => {
+    console.log('MessageList received messages:', messages);
+  }, [messages]);
+
+  // Sync with parent component's expandedMessageId
+  useEffect(() => {
+    setLocalExpandedMessageId(expandedMessageId);
+  }, [expandedMessageId]);
+
+  const handleFeedbackClick = (messageId, isPositive) => {
+    setSelectedMessageId(messageId);
+    setQuickFeedbackOpen(true);
+    
+    if (onFeedback) {
+      onFeedback(messageId, isPositive);
+    }
+  };
+
+  const handleQuickFeedbackSubmit = async (feedbackData) => {
+    setFeedbackLoading(true);
+    try {
+      await submitQuickFeedback(
+        selectedMessageId,
+        sessionId,
+        feedbackData.ratings.assistant_helpfulness >= 4,
+        feedbackData.freeText,
+        workshopId,
+        moduleId
+      );
+    } catch (error) {
+      console.error('Error submitting quick feedback:', error);
+    } finally {
+      setFeedbackLoading(false);
+      setQuickFeedbackOpen(false);
+    }
+  };
+
+  const handleToggleExpand = (messageId) => {
+    // Toggle the expanded state locally
+    const newExpandedId = localExpandedMessageId === messageId ? null : messageId;
+    setLocalExpandedMessageId(newExpandedId);
+    
+    // Notify parent component
+    if (onToggleExpand) {
+      onToggleExpand(newExpandedId);
+    }
+  };
+
   if (!messages || messages.length === 0) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
@@ -208,172 +262,137 @@ export default function MessageList({
   
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      {messages.map((message, index) => (
-        <Box
-          key={message.id || index}
-          sx={{
-            display: 'flex',
-            flexDirection: message.role === 'user' ? 'row-reverse' : 'row',
-            gap: 2,
-            alignItems: 'flex-start'
-          }}
-        >
-          {/* Avatar */}
-          <Avatar
+      {messages.map((message, index) => {
+        // Debug logging for each message
+        console.log(`Rendering message ${index}:`, message);
+        
+        // Check if message has debug information
+        const hasDebug = message.metadata && message.metadata.debug;
+        console.log(`Message ${index} has debug:`, hasDebug, message.metadata?.debug);
+        
+        return (
+          <Box
+            key={message.id || index}
             sx={{
-              bgcolor: message.role === 'user' ? 'primary.main' : 'secondary.main',
-              width: 32,
-              height: 32
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: message.role === 'user' ? 'flex-end' : 'flex-start',
+              width: '100%'
             }}
           >
-            {message.role === 'user' ? <PersonIcon /> : <SmartToyIcon />}
-          </Avatar>
-
-          {/* Message Content */}
-          <Paper
-            elevation={0}
-            sx={{
-              p: 2,
-              maxWidth: '70%',
-              backgroundColor: message.role === 'user' ? '#FFFFFF' : '#F9FBFA',
-              borderRadius: 2,
-              border: '1px solid',
-              borderColor: '#E8EDEB'
-            }}
-          >
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-              <Box sx={{ flex: 1 }}>
-                <Typography 
-                  variant="body1" 
-                  component="div"
-                  sx={{ 
-                    color: 'text.primary',
-                    fontWeight: 400
-                  }}
-                >
-                  {message.role === 'user' ? (
-                    message.content
-                  ) : (
-                    <ReactMarkdown>{message.content}</ReactMarkdown>
-                  )}
-                </Typography>
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2,
+                maxWidth: '80%',
+                bgcolor: message.role === 'user' ? 'background.paper' : 'background.paper',
+                color: message.role === 'user' ? 'text.primary' : 'text.primary',
+                border: message.role === 'user' ? '1px solid' : '1px solid',
+                borderColor: message.role === 'user' ? 'primary.main' : 'divider'
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                {message.role === 'assistant' && (
+                  <SmartToyIcon sx={{ color: 'primary.main' }} />
+                )}
+                {message.role === 'user' && (
+                  <PersonIcon sx={{ color: 'primary.main' }} />
+                )}
                 
-                {message.role === 'assistant' && message.metadata?.source && (
-                  <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Chip
-                      icon={
-                        message.metadata.source.type === 'database' ? <DatabaseIcon /> : 
-                        message.metadata.source.type === 'rag_llm' ? <DatabaseIcon /> :
-                        <SmartToyIcon />
-                      }
-                      label={`${message.metadata.source.label} ${message.metadata.source.confidence !== 'N/A' ? `(${message.metadata.source.confidence})` : ''}`}
-                      size="small"
-                      color={
-                        message.metadata.source.type === 'database' ? 'primary' : 
-                        message.metadata.source.type === 'rag_llm' ? 'info' :
-                        'secondary'
-                      }
-                      variant="outlined"
-                    />
-                    {message.metadata.source.matched_question && (
-                      <Typography variant="caption" color="text.secondary">
-                        Matched: "{message.metadata.source.matched_question}"
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="body1" component="div">
+                    {message.content ? (
+                      <ReactMarkdown>{message.content}</ReactMarkdown>
+                    ) : (
+                      <Typography variant="body1" color="text.secondary">
+                        No content available
                       </Typography>
                     )}
-                  </Box>
-                )}
-
-                {/* Debug Information */}
-                {message.role === 'assistant' && message.metadata?.debug && (
-                  <>
-                    <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Chip
-                        icon={<BugReportIcon />}
-                        label={expandedMessageId === message.id ? "Hide Processing Details" : "Show Processing Details"}
-                        size="small"
-                        onClick={() => onToggleExpand(expandedMessageId === message.id ? null : message.id)}
-                        sx={{ 
-                          cursor: 'pointer',
-                          '&:hover': {
-                            backgroundColor: 'rgba(25, 118, 210, 0.08)'
-                          }
-                        }}
-                      />
+                  </Typography>
+                  
+                  {message.metadata?.debug && (
+                    <Box sx={{ mt: 1 }}>
+                      <Typography variant="caption" color="text.secondary">
+                        Match Score: {message.metadata.match_score?.toFixed(2) || 'N/A'}
+                      </Typography>
                     </Box>
-                    <Collapse in={expandedMessageId === message.id}>
-                      <DebugPanel debug={message.metadata.debug} />
-                    </Collapse>
+                  )}
+                </Box>
+              </Box>
+
+              {/* Action buttons */}
+              <Box sx={{ display: 'flex', gap: 1, ml: 2 }}>
+                <Tooltip title="Copy to clipboard">
+                  <IconButton
+                    size="small"
+                    onClick={() => onCopy(message.content)}
+                    sx={{ color: 'text.secondary' }}
+                  >
+                    <ContentCopyIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+
+                {message.role === 'assistant' && !message.error && (
+                  <>
+                    <Tooltip title="Helpful">
+                      <IconButton
+                        size="small"
+                        onClick={() => handleFeedbackClick(message.id, true)}
+                        sx={{ 
+                          color: feedbackSent[message.id] === 'positive' ? 'primary.main' : 'text.secondary'
+                        }}
+                      >
+                        <ThumbUpIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Not helpful">
+                      <IconButton
+                        size="small"
+                        onClick={() => handleFeedbackClick(message.id, false)}
+                        sx={{ 
+                          color: feedbackSent[message.id] === 'negative' ? 'error.main' : 'text.secondary'
+                        }}
+                      >
+                        <ThumbDownIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
                   </>
                 )}
-              </Box>
-              
-              {/* Action Buttons */}
-              {message.role === 'assistant' && (
-                <Box sx={{ display: 'flex', gap: 1, ml: 2 }}>
-                  <Tooltip title="Copy">
-                    <IconButton 
-                      size="small" 
-                      onClick={() => onCopy(message.content)}
+
+                {hasDebug && (
+                  <Tooltip title="Toggle debug info">
+                    <IconButton
+                      size="small"
+                      onClick={() => handleToggleExpand(message.id)}
                       sx={{ color: 'text.secondary' }}
                     >
-                      <ContentCopyIcon fontSize="small" />
+                      {localExpandedMessageId === message.id ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title="Helpful">
-                    <IconButton 
-                      size="small"
-                      onClick={() => onFeedback(message.id, true)}
-                      sx={{ 
-                        color: feedbackSent[message.id] === 'positive' ? 'primary.main' : 'text.secondary'
-                      }}
-                    >
-                      <ThumbUpIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Not Helpful">
-                    <IconButton 
-                      size="small"
-                      onClick={() => onFeedback(message.id, false)}
-                      sx={{ 
-                        color: feedbackSent[message.id] === 'negative' ? 'error.main' : 'text.secondary'
-                      }}
-                    >
-                      <ThumbDownIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-              )}
-            </Box>
-            
-            {/* Message Metadata */}
-            {message.metadata && (
-              <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                {message.metadata.references && Array.isArray(message.metadata.references) ? (
-                  <Box>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>
-                      References:
-                    </Typography>
-                    {message.metadata.references.map((ref, idx) => (
-                      <Box key={idx} sx={{ mt: 1, pl: 1, borderLeft: '2px solid', borderColor: 'info.light' }}>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>
-                          {ref.title} {ref.score ? `(${Math.round(ref.score * 100)}%)` : ''}
-                        </Typography>
-                        <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary' }}>
-                          {ref.snippet}
-                        </Typography>
-                      </Box>
-                    ))}
-                  </Box>
-                ) : message.metadata.references && (
-                  <Typography variant="caption" color="text.secondary">
-                    References: {message.metadata.references}
-                  </Typography>
                 )}
               </Box>
+            </Paper>
+
+            {/* Debug Panel */}
+            {hasDebug && (
+              <Collapse in={localExpandedMessageId === message.id}>
+                <DebugPanel debug={message.metadata.debug} />
+              </Collapse>
             )}
-          </Paper>
-        </Box>
-      ))}
+          </Box>
+        );
+      })}
+
+      {/* Quick Feedback Dialog */}
+      <QuickFeedback
+        open={quickFeedbackOpen}
+        onClose={() => setQuickFeedbackOpen(false)}
+        onSubmit={handleQuickFeedbackSubmit}
+        messageId={selectedMessageId}
+        chatSessionId={sessionId}
+        workshopId={workshopId}
+        moduleId={moduleId}
+      />
     </Box>
   );
 }

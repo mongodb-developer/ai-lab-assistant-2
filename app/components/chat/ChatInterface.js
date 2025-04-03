@@ -28,6 +28,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import SampleQuestions from './SampleQuestions';
 import MessageList from './MessageList';
+import WorkshopSurvey from '../feedback/WorkshopSurvey';
 
 // Mock session for development
 const mockSession = {
@@ -55,10 +56,12 @@ export default function ChatInterface() {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [showSamples, setShowSamples] = useState(true);
+  const [showSamples, setShowSamples] = useState(false);
   const [conversationHistory, setConversationHistory] = useState([]);
   const [feedbackSent, setFeedbackSent] = useState({});
   const [expandedMessageId, setExpandedMessageId] = useState(null);
+  const [sessionId, setSessionId] = useState(null);
+  const [showWorkshopSurvey, setShowWorkshopSurvey] = useState(false);
   
   const messagesEndRef = useRef(null);
   
@@ -92,54 +95,100 @@ export default function ChatInterface() {
     }
   };
   
+  // Add this function to randomly trigger the survey
+  const maybeShowWorkshopSurvey = () => {
+    // 10% chance to show the survey
+    if (Math.random() < 0.1) {
+      setShowWorkshopSurvey(true);
+    }
+  };
+  
+  // Toggle between samples and messages
+  const toggleView = () => {
+    setShowSamples(prev => !prev);
+  };
+  
+  // Update handleSubmit to trigger survey
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!input.trim()) return;
-    
-    const userMessage = input;
-    setInput('');
+    if (!input.trim() || isLoading) return;
+
+    // Switch to messages view when submitting a question
     setShowSamples(false);
+
+    const userMessage = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: input.trim()
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setInput('');
     setIsLoading(true);
-    
-    // Add user message to the chat
-    setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
-    
+
     try {
+      console.log('Sending request to API with question:', userMessage.content);
+      
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          question: userMessage,
-          debug: true
+          question: userMessage.content,
+          sessionId,
+          debug: true,
+          userId: session?.user?.id
         }),
       });
       
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
+      let data;
+      try {
+        data = await response.json();
+        console.log('Received API response:', data);
+      } catch (parseError) {
+        console.error('Error parsing JSON response:', parseError);
+        throw new Error('Invalid JSON response from server');
       }
       
-      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(`Network response was not ok: ${response.status} - ${data.error || 'Unknown error'}`);
+      }
       
-      // Add assistant message to the chat
-      setMessages(prev => [...prev, { 
+      // Store session ID if this is the first message
+      if (!sessionId && data.sessionId) {
+        setSessionId(data.sessionId);
+      }
+      
+      // Add assistant message to the chat with proper structure
+      const assistantMessage = {
         id: Date.now().toString(),
-        role: 'assistant', 
-        content: data.answer,
+        role: 'assistant',
+        content: data.answer || 'Sorry, I could not generate a response.',
         metadata: {
-          title: data.title,
-          summary: data.summary,
-          references: data.references,
-          source: data.source,
+          title: data.title || '',
+          summary: data.summary || '',
+          references: data.references || [],
+          source: data.source || {
+            type: 'unknown',
+            label: '',
+            description: '',
+            confidence: '0%'
+          },
           match_score: data.match_score,
-          debug: data.debug
+          debug: data.debug || {}
         }
-      }]);
+      };
+      
+      console.log('Adding assistant message:', assistantMessage);
+      setMessages(prev => [...prev, assistantMessage]);
+      
+      // After successful response, maybe show survey
+      maybeShowWorkshopSurvey();
     } catch (error) {
       console.error('Error sending message:', error);
       setMessages(prev => [...prev, { 
         id: Date.now().toString(),
         role: 'assistant', 
-        content: 'Sorry, there was an error processing your request. Please try again.',
+        content: `Sorry, there was an error processing your request: ${error.message}`,
         error: true 
       }]);
     } finally {
@@ -149,6 +198,7 @@ export default function ChatInterface() {
   
   const handleSampleQuestionClick = (question) => {
     setInput(question);
+    setShowSamples(false); // Switch to messages view when selecting a sample question
     handleSubmit({ preventDefault: () => {} });
   };
   
@@ -277,6 +327,30 @@ export default function ChatInterface() {
           {isLoading ? <CircularProgress size={24} /> : 'Send'}
         </Button>
       </Box>
+      
+      {/* Toggle Button */}
+      <Box sx={{ position: 'fixed', bottom: 100, right: 20, zIndex: 100 }}>
+        <Tooltip title={showSamples ? "Show Messages" : "Show Sample Questions"}>
+          <IconButton 
+            color="primary" 
+            onClick={toggleView}
+            sx={{ 
+              bgcolor: 'background.paper',
+              boxShadow: 2,
+              '&:hover': { bgcolor: 'background.paper' }
+            }}
+          >
+            {showSamples ? <SmartToyIcon /> : <HistoryIcon />}
+          </IconButton>
+        </Tooltip>
+      </Box>
+      
+      {/* Workshop Survey Dialog */}
+      <WorkshopSurvey
+        open={showWorkshopSurvey}
+        onClose={() => setShowWorkshopSurvey(false)}
+        sessionId={session.id}
+      />
     </Box>
   );
 }

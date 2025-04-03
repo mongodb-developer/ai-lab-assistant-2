@@ -40,3 +40,49 @@ a {
     color-scheme: dark;
   }
 }
+
+/* Mermaid diagram styling */
+.mermaid {
+  text-align: center;
+}
+
+.mermaid svg {
+  max-width: 100%;
+  height: auto !important;
+  margin: 0 auto;
+  display: block;
+}
+
+/* Fix for mermaid dark mode issues */
+[data-theme="dark"] .mermaid .label {
+  color: #FFFFFF !important;
+}
+
+[data-theme="dark"] .mermaid .node rect,
+[data-theme="dark"] .mermaid .node circle,
+[data-theme="dark"] .mermaid .node ellipse,
+[data-theme="dark"] .mermaid .node polygon,
+[data-theme="dark"] .mermaid .node path {
+  fill: #2D2D2D !important;
+  stroke: #CCCCCC !important;
+}
+
+[data-theme="dark"] .mermaid .edgePath .path {
+  stroke: #CCCCCC !important;
+}
+
+[data-theme="dark"] .mermaid .edgeLabel {
+  background-color: #2D2D2D !important;
+  color: #FFFFFF !important;
+}
+
+/* Enhanced visibility for diagrams */
+.mermaid-diagram-container {
+  padding: 16px;
+  background-color: #F8F9FA;
+  border-radius: 8px;
+  border: 1px solid #E1E4E8;
+  margin: 16px 0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  overflow: auto;
+}

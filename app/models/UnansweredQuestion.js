@@ -5,11 +5,10 @@ const unansweredQuestionSchema = new mongoose.Schema({
   user_id: { type: String, required: true },
   user_name: { type: String, required: true },
   question: { type: String, required: true },
-  answer: { type: String, required: true },
+  answer: { type: String },
   module: { type: String },
   question_embedding: {
     type: [Number],
-    required: true,
     index: {
       type: 'vectorSearch',
       dimensions: 1536,

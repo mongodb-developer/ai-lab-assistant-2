@@ -367,10 +367,7 @@ cat > app/lib/mongodb.js << 'EOL'
 import { MongoClient } from 'mongodb';
 
 const uri = process.env.MONGODB_URI;
-const options = {
-  useUnifiedTopology: true,
-  useNewUrlParser: true,
-};
+const options = {};
 
 let client;
 let clientPromise;

@@ -866,8 +866,7 @@ export default function ChatInterface() {
       setConversationHistory([
         { id: '1', title: 'MongoDB Aggregation Pipeline', date: '2023-11-27' },
         { id: '2', title: 'Atlas Vector Search Setup', date: '2023-11-25' },
-        { id: '3', title: 'Schema Design Best Practices', date: '2023-11-20' },
-      ]);
+        { id: '3', title: 'Schema Design Best Practices', date: '2023-11-20' }]);
     } catch (error) {
       console.error('Error fetching conversation history:', error);
     }
@@ -891,9 +890,7 @@ export default function ChatInterface() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           question: userMessage,
-          module: selectedModule?.value || '',
-        }),
-      });
+          module: selectedModule?.value || ''})});
       
       if (!response.ok) {
         throw new Error('Network response was not ok');
@@ -1145,9 +1142,7 @@ export default function MessageList({ messages, onCopy, onFeedback, feedbackSent
             position: 'relative',
             borderRadius: 2,
             '&:hover .message-actions': {
-              opacity: 1,
-            },
-          }}
+              opacity: 1}}}
         >
           {/* Message Header (Assistant messages only) */}
           {message.role === 'assistant' && message.metadata?.title && (
@@ -1190,8 +1185,7 @@ export default function MessageList({ messages, onCopy, onFeedback, feedbackSent
                 color: theme.palette.primary.main,
                 textDecoration: 'none',
                 '&:hover': {
-                  textDecoration: 'underline',
-                }
+                  textDecoration: 'underline'}
               },
               '& p': { my: 1 },
               '& ul, & ol': { pl: 2 }
@@ -1210,8 +1204,7 @@ export default function MessageList({ messages, onCopy, onFeedback, feedbackSent
                 justifyContent: 'flex-end', 
                 mt: 1,
                 opacity: 0,
-                transition: 'opacity 0.2s ease-in-out',
-              }}
+                transition: 'opacity 0.2s ease-in-out'}}
             >
               <Tooltip title="Copy to clipboard">
                 <IconButton 
@@ -1273,8 +1266,7 @@ export default function MessageList({ messages, onCopy, onFeedback, feedbackSent
                     color: theme.palette.primary.main,
                     textDecoration: 'none',
                     '&:hover': {
-                      textDecoration: 'underline',
-                    }
+                      textDecoration: 'underline'}
                   }
                 }}
                 dangerouslySetInnerHTML={{ 
@@ -1396,8 +1388,7 @@ export default function Header() {
   const navItems = [
     { text: 'Chat', href: '/chat', icon: <QuestionAnswerIcon /> },
     { text: 'Design Review', href: '/design-review', icon: <DesignServicesIcon /> },
-    { text: 'About', href: '/about', icon: <InfoIcon /> },
-  ];
+    { text: 'About', href: '/about', icon: <InfoIcon /> }];
   
   return (
     <>
@@ -1456,13 +1447,11 @@ export default function Header() {
                 anchorEl={anchorEl}
                 anchorOrigin={{
                   vertical: 'bottom',
-                  horizontal: 'right',
-                }}
+                  horizontal: 'right'}}
                 keepMounted
                 transformOrigin={{
                   vertical: 'top',
-                  horizontal: 'right',
-                }}
+                  horizontal: 'right'}}
                 open={Boolean(anchorEl)}
                 onClose={handleClose}
               >
@@ -1589,10 +1578,8 @@ export default function DesignReviewPage() {
       const response = await fetch('/api/design-review', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+          'Content-Type': 'application/json'},
+        body: JSON.stringify(formData)});
       
       if (!response.ok) {
         const data = await response.json();
@@ -1786,8 +1773,7 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
   title: 'MongoDB AI Lab Assistant',
-  description: 'An AI-powered assistant for MongoDB knowledge and design reviews',
-};
+  description: 'An AI-powered assistant for MongoDB knowledge and design reviews'};
 
 export default function RootLayout({ children }) {
   return (
@@ -2100,78 +2086,54 @@ const theme = createTheme({
       main: '#00684A', // MongoDB Green
       light: '#4CAF50',
       dark: '#005240',
-      contrastText: '#fff',
-    },
+      contrastText: '#fff'},
     secondary: {
       main: '#3D5AFE', // Bright Blue
       light: '#8187FF',
       dark: '#0031CA',
-      contrastText: '#fff',
-    },
+      contrastText: '#fff'},
     error: {
-      main: '#FF4436',
-    },
+      main: '#FF4436'},
     warning: {
-      main: '#FFC017',
-    },
+      main: '#FFC017'},
     info: {
-      main: '#13AA52',
-    },
+      main: '#13AA52'},
     success: {
-      main: '#00ED64',
-    },
+      main: '#00ED64'},
     background: {
       default: '#F9FAFB',
-      paper: '#FFFFFF',
-    },
-  },
+      paper: '#FFFFFF'}},
   typography: {
     fontFamily: [
       'Roboto',
       '"Helvetica Neue"',
       'Arial',
-      'sans-serif',
-    ].join(','),
+      'sans-serif'].join(','),
     h1: {
-      fontWeight: 600,
-    },
+      fontWeight: 600},
     h2: {
-      fontWeight: 600,
-    },
+      fontWeight: 600},
     h3: {
-      fontWeight: 600,
-    },
+      fontWeight: 600},
     h4: {
-      fontWeight: 500,
-    },
+      fontWeight: 500},
     h5: {
-      fontWeight: 500,
-    },
+      fontWeight: 500},
     h6: {
-      fontWeight: 500,
-    },
-  },
+      fontWeight: 500}},
   shape: {
-    borderRadius: 8,
-  },
+    borderRadius: 8},
   components: {
     MuiButton: {
       styleOverrides: {
         root: {
           textTransform: 'none',
-          fontWeight: 500,
-        },
-      },
-    },
+          fontWeight: 500}}},
     MuiAppBar: {
       styleOverrides: {
         root: {
           backgroundColor: '#00684A', // MongoDB Green
-        },
-      },
-    },
-  },
-});
+        }}}}});
 
 export default theme;
 
@@ -2403,9 +2365,7 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   images: {
-    domains: ['lh3.googleusercontent.com'],
-  },
-}
+    domains: ['lh3.googleusercontent.com']}}
 
 module.exports = nextConfig
 
@@ -2600,9 +2560,7 @@ export const authOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    }),
-  ],
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET})],
   adapter: MongoDBAdapter(clientPromise),
   callbacks: {
     async session({ session, user }) {
@@ -2616,16 +2574,13 @@ export const authOptions = {
         token.isAdmin = user.isAdmin || false;
       }
       return token;
-    },
-  },
+    }},
   pages: {
-    signIn: '/login',
-  },
+    signIn: '/login'},
   session: {
     strategy: 'database',
     maxAge: 30 * 24 * 60 * 60, // 30 days
-  },
-};
+  }};
 
 const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };
@@ -2672,8 +2627,7 @@ export async function POST(request) {
         summary: bestMatch.summary || '',
         references: bestMatch.references || '',
         source: 'database',
-        match_score: bestMatch.combined_score,
-      };
+        match_score: bestMatch.combined_score};
     } else {
       // Generate a new answer
       const answer = await generatePotentialAnswer(question);
@@ -2683,8 +2637,7 @@ export async function POST(request) {
         title: answer.title || '',
         summary: answer.summary || '',
         references: answer.references || '',
-        source: 'LLM',
-      };
+        source: 'LLM'};
       
       // Store the unanswered question
       await db.collection('unanswered_questions').insertOne({
@@ -2933,8 +2886,8 @@ import { MongoClient } from 'mongodb';
 
 const uri = process.env.MONGODB_URI;
 const options = {
-  useUnifiedTopology: true,
-  useNewUrlParser: true,
+  
+  
 };
 
 let client;
@@ -2965,15 +2918,13 @@ cat > app/lib/openai.js << 'EOL'
 import OpenAI from 'openai';
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+  apiKey: process.env.OPENAI_API_KEY});
 
 export async function generateEmbedding(text) {
   try {
     const response = await openai.embeddings.create({
       model: "text-embedding-ada-002",
-      input: text,
-    });
+      input: text});
     
     return response.data[0].embedding;
   } catch (error) {
@@ -3004,8 +2955,7 @@ export async function searchSimilarQuestions(db, questionEmbedding, queryText, m
         'summary': 1,
         'references': 1,
         'module': 1,
-        'vector_score': {'$meta': 'vectorSearchScore'},
-      }
+        'vector_score': {'$meta': 'vectorSearchScore'}}
     }
   ];
 
@@ -3029,8 +2979,7 @@ export async function searchSimilarQuestions(db, questionEmbedding, queryText, m
         'summary': 1,
         'references': 1,
         'module': 1,
-        'text_score': {'$meta': 'searchScore'},
-      }
+        'text_score': {'$meta': 'searchScore'}}
     }
   ];
 
@@ -3230,9 +3179,7 @@ export default function ChatInterface() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           question: userMessage,
-          module: selectedModule?.value || '',
-        }),
-      });
+          module: selectedModule?.value || ''})});
       
       if (!response.ok) {
         throw new Error('Network response was not ok');
@@ -3248,8 +3195,7 @@ export default function ChatInterface() {
           title: data.title,
           summary: data.summary,
           references: data.references,
-          source: data.source,
-        }
+          source: data.source}
       }]);
     } catch (error) {
       console.error('Error sending message:', error);
@@ -3372,8 +3318,7 @@ export default function MessageList({ messages }) {
                 ? theme.palette.error.contrastText 
                 : theme.palette.text.primary,
             position: 'relative',
-            borderRadius: 2,
-          }}
+            borderRadius: 2}}
         >
           {message.role === 'assistant' && message.metadata?.title && (
             <>
@@ -3623,8 +3568,7 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
   title: 'MongoDB AI Lab Assistant',
-  description: 'An AI-powered assistant for MongoDB knowledge and design reviews',
-};
+  description: 'An AI-powered assistant for MongoDB knowledge and design reviews'};
 
 export default function RootLayout({ children }) {
   return (
@@ -3832,10 +3776,8 @@ export default function DesignReviewPage() {
       const response = await fetch('/api/design-review', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+          'Content-Type': 'application/json'},
+        body: JSON.stringify(formData)});
       
       if (!response.ok) {
         const data = await response.json();
@@ -4056,8 +3998,7 @@ export default function Header() {
   const navItems = [
     { text: 'Chat', href: '/chat', icon: <QuestionAnswerIcon /> },
     { text: 'Design Review', href: '/design-review', icon: <DesignServicesIcon /> },
-    { text: 'About', href: '/about', icon: <InfoIcon /> },
-  ];
+    { text: 'About', href: '/about', icon: <InfoIcon /> }];
   
   return (
     <>
@@ -4116,13 +4057,11 @@ export default function Header() {
                 anchorEl={anchorEl}
                 anchorOrigin={{
                   vertical: 'bottom',
-                  horizontal: 'right',
-                }}
+                  horizontal: 'right'}}
                 keepMounted
                 transformOrigin={{
                   vertical: 'top',
-                  horizontal: 'right',
-                }}
+                  horizontal: 'right'}}
                 open={Boolean(anchorEl)}
                 onClose={handleClose}
               >
@@ -4208,78 +4147,54 @@ const theme = createTheme({
       main: '#00684A', // MongoDB Green
       light: '#4CAF50',
       dark: '#005240',
-      contrastText: '#fff',
-    },
+      contrastText: '#fff'},
     secondary: {
       main: '#3D5AFE', // Bright Blue
       light: '#8187FF',
       dark: '#0031CA',
-      contrastText: '#fff',
-    },
+      contrastText: '#fff'},
     error: {
-      main: '#FF4436',
-    },
+      main: '#FF4436'},
     warning: {
-      main: '#FFC017',
-    },
+      main: '#FFC017'},
     info: {
-      main: '#13AA52',
-    },
+      main: '#13AA52'},
     success: {
-      main: '#00ED64',
-    },
+      main: '#00ED64'},
     background: {
       default: '#F9FAFB',
-      paper: '#FFFFFF',
-    },
-  },
+      paper: '#FFFFFF'}},
   typography: {
     fontFamily: [
       'Roboto',
       '"Helvetica Neue"',
       'Arial',
-      'sans-serif',
-    ].join(','),
+      'sans-serif'].join(','),
     h1: {
-      fontWeight: 600,
-    },
+      fontWeight: 600},
     h2: {
-      fontWeight: 600,
-    },
+      fontWeight: 600},
     h3: {
-      fontWeight: 600,
-    },
+      fontWeight: 600},
     h4: {
-      fontWeight: 500,
-    },
+      fontWeight: 500},
     h5: {
-      fontWeight: 500,
-    },
+      fontWeight: 500},
     h6: {
-      fontWeight: 500,
-    },
-  },
+      fontWeight: 500}},
   shape: {
-    borderRadius: 8,
-  },
+    borderRadius: 8},
   components: {
     MuiButton: {
       styleOverrides: {
         root: {
           textTransform: 'none',
-          fontWeight: 500,
-        },
-      },
-    },
+          fontWeight: 500}}},
     MuiAppBar: {
       styleOverrides: {
         root: {
           backgroundColor: '#00684A', // MongoDB Green
-        },
-      },
-    },
-  },
-});
+        }}}}});
 
 export default theme;
 EOL
@@ -5011,9 +4926,7 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   images: {
-    domains: ['lh3.googleusercontent.com'],
-  },
-}
+    domains: ['lh3.googleusercontent.com']}}
 
 module.exports = nextConfig
 EOL
